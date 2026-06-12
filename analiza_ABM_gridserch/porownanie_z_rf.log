@@ -1,0 +1,61 @@
+==============================================================================
+PORÓWNANIE PIRAMID — ABM optimum vs dolny-środkowy 3×3 (Z RF aktywne)
+Populacja: 50,000 | 600 mies. (50 lat)
+Risk factors: AKTYWNE (domyślna inicjalizacja przez _init_risk_factors)
+==============================================================================
+Creating synthetic realistic Polish population of 50000 citizens...
+  Created 49999 citizens in 20000 households
+  Created 4 zones with environmental parameters
+Starting simulation for 600 months (50.0 years)
+Initial population: 49999 citizens
+Year 1: Population=50024, Households=20453
+Year 5: Population=49535, Households=22198
+Year 10: Population=48646, Households=24334
+Year 15: Population=47527, Households=26315
+Year 20: Population=46490, Households=28250
+Year 25: Population=45855, Households=30190
+Year 30: Population=45837, Households=32019
+Year 35: Population=46116, Households=33828
+Year 40: Population=46726, Households=35581
+Year 45: Population=47503, Households=37376
+Year 50: Population=48306, Households=39137
+Simulation complete. Final population: 48306
+Creating synthetic realistic Polish population of 50000 citizens...
+  Created 49999 citizens in 20000 households
+  Created 4 zones with environmental parameters
+Starting simulation for 600 months (50.0 years)
+Initial population: 49999 citizens
+Year 1: Population=49448, Households=20425
+Year 5: Population=47325, Households=22181
+Year 10: Population=45002, Households=24193
+Year 15: Population=43115, Households=25966
+Year 20: Population=41436, Households=27755
+Year 25: Population=40128, Households=29423
+Year 30: Population=39160, Households=31036
+Year 35: Population=38371, Households=32675
+Year 40: Population=37678, Households=34254
+Year 45: Population=37144, Households=35799
+Year 50: Population=36721, Households=37221
+Simulation complete. Final population: 36721
+  [OK]  DOLNY-ŚRODKOWY siatki 3×3: score=-26.56% pop=36,721
+  [OK]  ABM OPTIMUM (gridsearch ABM bez RF): score=-3.39% pop=48,306
+
+==============================================================================
+STATYSTYKI KOŃCOWE (po 50 latach, z RF)
+==============================================================================
+
+[ABM OPTIMUM (gridsearch ABM bez RF)]  FM=1.9273  MM=1.0091
+  Populacja:     49,999 → 48,306  (-3.39%)
+  Mediana wieku: 34.4 lat
+  CVD prev:      5.94%  (mean H_cum=0.0679)
+  LC prev:       0.80%  (mean H_cum=0.00905)
+  RF: palenie=1.8%  otyłość=2.4%  inactivity=3.0%  chol=0.5%  hipertensja=0.2%
+
+[DOLNY-ŚRODKOWY siatki 3×3]  FM=1.5455  MM=1.6000
+  Populacja:     49,999 → 36,721  (-26.56%)
+  Mediana wieku: 37.5 lat
+  CVD prev:      5.45%  (mean H_cum=0.0622)
+  LC prev:       0.71%  (mean H_cum=0.00799)
+  RF: palenie=1.7%  otyłość=2.1%  inactivity=2.8%  chol=0.4%  hipertensja=0.1%
+
+✓ Zapisano: piramida_porownanie_z_rf.html

@@ -1,0 +1,42 @@
+==============================================================================
+TRAJEKTORIE LUDNOŚCI — ABM bez RF
+Populacja: 50,000 | 600 mies. (50 lat)
+==============================================================================
+Creating synthetic realistic Polish population of 50000 citizens...
+  Created 49999 citizens in 20000 households
+  Created 4 zones with environmental parameters
+Starting simulation for 600 months (50.0 years)
+Initial population: 49999 citizens
+Year 1: Population=49502, Households=20429
+Year 5: Population=47715, Households=22153
+Year 10: Population=45851, Households=24200
+Year 15: Population=44132, Households=26196
+Year 20: Population=42481, Households=28058
+Year 25: Population=41090, Households=29852
+Year 30: Population=40185, Households=31611
+Year 35: Population=39332, Households=33205
+Year 40: Population=38468, Households=34830
+Year 45: Population=37667, Households=36397
+Year 50: Population=36762, Households=37883
+Simulation complete. Final population: 36762
+Creating synthetic realistic Polish population of 50000 citizens...
+  Created 49999 citizens in 20000 households
+  Created 4 zones with environmental parameters
+Starting simulation for 600 months (50.0 years)
+Initial population: 49999 citizens
+Year 1: Population=50017, Households=20445
+Year 5: Population=49773, Households=22206
+Year 10: Population=49293, Households=24298
+Year 15: Population=48591, Households=26397
+Year 20: Population=48070, Households=28424
+Year 25: Population=47501, Households=30325
+Year 30: Population=47328, Households=32155
+Year 35: Population=47658, Households=34028
+Year 40: Population=48249, Households=35902
+Year 45: Population=48874, Households=37751
+Year 50: Population=49559, Households=39637
+Simulation complete. Final population: 49559
+  [OK]  DOLNY-ŚRODKOWY siatki 3×3: 49,999 → 36,762  (-26.47%)
+  [OK]  ABM OPTIMUM: 49,999 → 49,559  (-0.88%)
+
+✓ Zapisano: populacja_w_czasie_no_rf.html
