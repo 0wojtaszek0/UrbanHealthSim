@@ -1,0 +1,1271 @@
+% !TEX program = pdflatex
+% Notatki do projektu Urban Health ABM
+% Kompilacja: pdflatex NOTATKI.tex (×2 dla spisu treści) lub xelatex NOTATKI.tex
+% Zawiera: pełny wykład o projekcie, wszystkie wzory wyjaśnione, źródła, walidacja
+
+\documentclass[11pt,a4paper]{article}
+
+% ===== JĘZYK I FONTY =====
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ===== MATEMATYKA =====
+\usepackage{amsmath, amssymb, amsthm, mathtools}
+\usepackage{bm}
+
+% ===== TABELE =====
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+% ===== KOLORY I LAYOUT =====
+\usepackage[a4paper, margin=2.5cm, headheight=22pt]{geometry}
+\usepackage{wasysym}  % daje \permil (promile w math mode)
+\usepackage[dvipsnames, table]{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+
+% ===== KOD =====
+\usepackage{listings}
+
+% ===== HYPERLINKI =====
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=NavyBlue!70!black,
+  urlcolor=NavyBlue!70!black,
+  citecolor=NavyBlue!70!black
+}
+
+% ===== DEFINICJE KOLORÓW =====
+\definecolor{ink}{HTML}{1B2A41}
+\definecolor{gold}{HTML}{A07840}
+\definecolor{teal}{HTML}{2C5F7C}
+\definecolor{cream}{HTML}{F6F1E8}
+\definecolor{rule}{HTML}{D8DEE5}
+\definecolor{muted}{HTML}{6B7785}
+\definecolor{codebg}{HTML}{F4F2EC}
+
+% ===== STYL NAGŁÓWKÓW =====
+\titleformat{\section}[hang]
+  {\Large\bfseries\color{ink}}
+  {\thesection}{0.7em}{}[\vspace{2pt}\textcolor{gold}{\hrule height 1.5pt}\vspace{2pt}]
+\titleformat{\subsection}[hang]
+  {\large\bfseries\color{ink}}
+  {\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}[hang]
+  {\bfseries\color{teal}}
+  {\thesubsubsection}{0.5em}{}
+
+% ===== GŁÓWKA STRONY =====
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{muted}\textsc{Urban Health ABM --- Notatki}}
+\fancyhead[R]{\small\color{muted}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rule}\leaders\hrule height \headrulewidth\hfill}}
+
+% ===== KOD ŹRÓDŁOWY =====
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\small\ttfamily\color{ink},
+  backgroundcolor=\color{codebg},
+  keywordstyle=\color{teal}\bfseries,
+  stringstyle=\color{gold!90!black},
+  commentstyle=\color{muted}\itshape,
+  numberstyle=\tiny\color{muted},
+  showstringspaces=false,
+  frame=leftline,
+  framerule=1.5pt,
+  rulecolor=\color{teal},
+  xleftmargin=12pt,
+  framexleftmargin=10pt,
+  breaklines=true,
+  numbers=left,
+  numbersep=8pt,
+  columns=fullflexible,
+  belowskip=10pt,
+  aboveskip=10pt
+}
+\lstset{style=py}
+
+% ===== BOXY =====
+\newtcolorbox{infobox}[1][]{
+  colback=cream,
+  colframe=gold,
+  boxrule=0pt,
+  leftrule=2pt,
+  arc=2pt,
+  left=10pt, right=10pt, top=6pt, bottom=6pt,
+  fontupper=\small,
+  breakable,
+  #1
+}
+\newtcolorbox{warnbox}[1][]{
+  colback=red!3!white,
+  colframe=red!50!black,
+  boxrule=0pt,
+  leftrule=2pt,
+  arc=2pt,
+  left=10pt, right=10pt, top=6pt, bottom=6pt,
+  fontupper=\small,
+  breakable,
+  #1
+}
+\newtcolorbox{formulabox}[1][]{
+  colback=white,
+  colframe=rule,
+  boxrule=0.5pt,
+  arc=2pt,
+  left=10pt, right=10pt, top=6pt, bottom=6pt,
+  fontupper=\normalsize,
+  breakable,
+  #1
+}
+
+% ===== KOMENDY SKRÓCONE =====
+% \cum przyjmuje opcjonalny argument w indeksie, np. \cum[,d] -> H_{cum,d}
+\newcommand{\cum}[1][]{H_{\mathrm{cum}#1}}
+\newcommand{\baseh}{\lambda}                       % uzywaj \baseh_{0,d}
+\newcommand{\promile}{\ensuremath{\text{\textperthousand}}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\indicator}[1]{\mathbb{1}\{#1\}}
+
+% ===== METADANE =====
+\title{
+  \vspace{-1.5cm}
+  {\small\color{gold}\textsc{Notatki do projektu zespołowego --- 2026}}\\[10pt]
+  {\Huge\bfseries\color{ink} Urban Health ABM}\\[6pt]
+  {\large\color{ink!70} Demograficzna symulacja populacji Polski}\\[3pt]
+  {\large\color{ink!70} z modelem dynamicznego ryzyka chorób przewlekłych}\\[20pt]
+  {\color{rule}\hrule height 1pt}
+  \vspace{6pt}
+  {\small\color{muted}Szczegółowe notatki towarzyszące prezentacji}
+}
+
+\author{}
+\date{}
+
+% ============================================================
+% DOKUMENT
+% ============================================================
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\vspace{-1cm}
+\begin{center}
+\begin{tabular}{ll}
+\textsc{Opiekunowie} & dr inż.\ Franciszek Rakowski \\
+                     & dr Jan Kisielewski \\[2pt]
+                     & {\small\color{muted} Interdyscyplinarne Centrum Modelowania Matematycznego i Komputerowego UW} \\[14pt]
+\textsc{Zespół}      & \textbf{Anna Strugielska} (kierownik) \\
+                     & Weronika Dąbrowska \\
+                     & Magdalena Jarońska \\
+                     & Wojciech Ofiara \\
+\end{tabular}
+\end{center}
+
+\vspace{2cm}
+\noindent\textcolor{muted}{\small Dokument zawiera kompletne wyjaśnienie projektu: motywację, źródła danych, architekturę kodu, formalizm matematyczny modelu Coxa wraz z wyprowadzeniem wszystkich wzorów, opis czynników ryzyka, metodologię kalibracji i gridsearchu, walidację oraz wnioski. Przeznaczony jako materiał wspierający prezentację oraz jako referencja do pytań szczegółowych.}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Wprowadzenie}
+% ============================================================
+
+\subsection{Czym jest Agent-Based Model (ABM)?}
+
+\textbf{Agent-Based Model} to klasa modeli symulacyjnych, w której zachowanie systemu wyłania się z indywidualnych decyzji wielu autonomicznych \emph{agentów}. W odróżnieniu od klasycznych modeli makro (np.\ równań różniczkowych opisujących liczebność populacji jako pojedynczą zmienną), ABM utrzymuje pełną \textbf{heterogeniczność} populacji.
+
+W naszym projekcie agentem jest \emph{mieszkaniec} populacji syntetycznej. Każdy mieszkaniec posiada:
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item unikalny identyfikator (\texttt{id}),
+  \item wiek (mierzony w miesiącach, nie w latach --- dla precyzji w pętli miesięcznej),
+  \item płeć biologiczną (\texttt{male} lub \texttt{female}),
+  \item przynależność do gospodarstwa domowego i strefy geograficznej,
+  \item zestaw chorób przewlekłych ($\mathrm{CVD}$, $\mathrm{Lung\ Cancer}$),
+  \item siedem czynników ryzyka (\textit{risk factors}, RF),
+  \item słownik \emph{skumulowanego hazardu biologicznego} $\cum[,d]$ dla każdej choroby $d$ --- biologiczną pamięć agenta.
+\end{itemize}
+
+\begin{infobox}
+\textbf{Dlaczego ABM, a nie model makro?} ABM pozwala na obserwację efektów emergentnych --- zachowań populacji wynikających z heterogeniczności jednostek. Można dokładnie śledzić piramidy wiekowe, wielochorobowość i nierówności zdrowotne w sposób niedostępny w zagregowanych modelach ODE/PDE.
+\end{infobox}
+
+\subsection{Motywacja projektu}
+
+Polska demografia jest \textbf{deficytowa}. Tabela \ref{tab:gus2021} przedstawia kluczowe wskaźniki dla 2021 roku.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Wskaźnik} & \textbf{Polska 2021} & \textbf{Stan zastępowalności} \\
+\midrule
+TFR (Total Fertility Rate) & 1{,}26 & 2{,}10 \\
+CBR (Crude Birth Rate) & 8{,}5\promile & --- \\
+CDR (Crude Death Rate) & 13{,}5\promile & = CBR \\
+NGR (Natural Growth Rate) & $-5{,}0\promile/$rok & $\geq 0$ \\
+\bottomrule
+\end{tabular}
+\caption{Wskaźniki demograficzne Polski 2021 wg GUS.}
+\label{tab:gus2021}
+\end{table}
+
+Przy niezmienionych warunkach (TFR poniżej progu zastępowalności pokoleń, ujemny przyrost naturalny) populacja zmniejsza się rocznie o około $5\promile$. W horyzoncie 50 lat oznacza to deficyt rzędu kilkudziesięciu procent. Pytania badawcze projektu:
+
+\begin{enumerate}[leftmargin=*]
+  \item Jaka kombinacja płodności i śmiertelności daje stabilną populację?
+  \item Jak czynniki ryzyka kształtują strukturę populacji w 50 lat?
+  \item Jaki efekt miałaby hipotetyczna kampania antynikotynowa lub interwencja na poziomie lifestyle?
+\end{enumerate}
+
+\subsection{Cele projektu}
+
+\begin{enumerate}[leftmargin=*, itemsep=2pt]
+  \item Zbudować pełny ABM dla populacji 50\,000 agentów × 50 lat.
+  \item Skalibrować model demograficzny do danych GUS 2021 tak, aby przy mnożnikach $\mathrm{FM} = \mathrm{MM} = 1{,}0$ uzyskać realistyczne CBR, CDR i TFR.
+  \item Wdrożyć Cox Proportional Hazards z biologiczną pamięcią agenta --- akumulacja szkód z ekspozycji na RF w czasie życia.
+  \item Wykonać gridsearch w przestrzeni $(\mathrm{FM}, \mathrm{MM})$ i odnaleźć regułę stabilności populacji.
+  \item Stworzyć aplikację interaktywną (Streamlit) z suwakami dla 7 czynników ryzyka, umożliwiającą eksperymentowanie ze scenariuszami.
+  \item Wyciągnąć wnioski demograficzne, epidemiologiczne i metodologiczne.
+\end{enumerate}
+
+\newpage
+% ============================================================
+\section{Źródła danych}
+% ============================================================
+
+Model opiera się na dwóch filarach: \emph{demografii} (dane populacyjne z Polski) oraz \emph{epidemiologii} (Hazard Ratios z literatury naukowej).
+
+\subsection{Dane demograficzne}
+
+\subsubsection{GUS Polska 2021 --- Tablice Trwania Życia}
+
+Tablice Trwania Życia podają roczne prawdopodobieństwa zgonu $q_x$ w funkcji wieku $x$ i płci. W naszym modelu przeliczamy je na prawdopodobieństwa \emph{miesięczne}. Tabela \ref{tab:mortality} prezentuje wybrane wartości.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrr}
+\toprule
+\textbf{Wiek} & \textbf{Mężczyźni $q_x^{m}$} & \textbf{Kobiety $q_x^{f}$} & \textbf{Stosunek M/K} \\
+\midrule
+0   & 0{,}000373 & 0{,}000291 & 1{,}28 \\
+20  & 0{,}000042 & 0{,}000012 & \textbf{3{,}5} \\
+40  & 0{,}000167 & 0{,}000067 & 2{,}5 \\
+60  & 0{,}001375 & 0{,}000583 & 2{,}4 \\
+70  & 0{,}003292 & 0{,}001833 & 1{,}8 \\
+80  & 0{,}007658 & 0{,}005375 & 1{,}4 \\
+90  & 0{,}018333 & 0{,}013750 & 1{,}3 \\
+\bottomrule
+\end{tabular}
+\caption{Miesięczne prawdopodobieństwo zgonu $q_x$ z GUS Polska 2021 (wartości skrócone do wybranych wieków).}
+\label{tab:mortality}
+\end{table}
+
+\textbf{Ważna obserwacja:} mężczyźni mają wyższą śmiertelność w \emph{każdym} przedziale wiekowym. Największa nadumieralność męska występuje w wieku 20--40 lat (wypadki, alkohol), gdzie stosunek dochodzi do 3{,}5x. Z wiekiem stosunek maleje, ale pozostaje powyżej 1.
+
+\subsubsection{Rozkład wiekowy --- Spis Powszechny GUS 2021}
+
+Populacja syntetyczna jest generowana z polskim rozkładem wiekowym (Tabela \ref{tab:agedist}). Wartości są normalizowane tak, aby sumowały się do 1.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rr}
+\toprule
+\textbf{Przedział wieku} & \textbf{Udział} \\
+\midrule
+ 0--9  & 9{,}4\,\% \\
+10--19 & 9{,}8\,\% \\
+20--29 & 10{,}4\,\% \\
+30--39 & 14{,}3\,\% \\
+40--49 & 13{,}5\,\% \\
+50--59 & 13{,}7\,\% \\
+60--69 & 12{,}8\,\% \\
+70--79 & 9{,}7\,\% \\
+80--89 & 5{,}1\,\% \\
+90+    & 1{,}3\,\% \\
+\bottomrule
+\end{tabular}
+\caption{Rozkład wiekowy populacji Polski 2021 (suma $\approx 1{,}000$).}
+\label{tab:agedist}
+\end{table}
+
+\subsubsection{ASFR --- wiekowe stopy płodności GUS}
+
+Age-Specific Fertility Rate (ASFR) podaje roczną liczbę urodzeń na kobietę w danym przedziale wieku. Tabela \ref{tab:fertility} pokazuje wartości używane w modelu.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Wiek} & \textbf{ASFR (roczna)} & \textbf{Miesięczna} \\
+\midrule
+15--19 & 0{,}011 & 0{,}00092 \\
+20--24 & 0{,}041 & 0{,}00342 \\
+25--29 & 0{,}081 & \textbf{0{,}00675} \\
+30--34 & 0{,}082 & \textbf{0{,}00683} \\
+35--39 & 0{,}034 & 0{,}00283 \\
+40--44 & 0{,}007 & 0{,}00058 \\
+45--49 & 0{,}0003 & 0{,}000025 \\
+\bottomrule
+\end{tabular}
+\caption{Wiekowe stopy płodności GUS Polska 2021. Szczyt: 25--34 lat.}
+\label{tab:fertility}
+\end{table}
+
+Całkowita dzietność (Total Fertility Rate):
+\begin{equation}
+\mathrm{TFR} = \sum_{\text{age}=15}^{49} \mathrm{ASFR}(\text{age}) \cdot \Delta \text{age} = (0{,}011 + 0{,}041 + \ldots + 0{,}0003) \cdot 5 \approx 1{,}28
+\end{equation}
+
+\subsubsection{Program Białystok+}
+
+Program \emph{Białystok+} dostarcza kohortowych danych medycznych z populacji polskiej miasta Białystok. Dane obejmują pomiary BMI, ciśnienia krwi, cholesterolu, prevalencje palenia oraz przypadków chorób sercowo-naczyniowych. W naszym modelu wykorzystaliśmy te dane do:
+\begin{itemize}[leftmargin=*]
+  \item kalibracji wiekowych profili prevalencji RF (krzywe inicjacji),
+  \item walidacji wyników modelu względem rzeczywistych pomiarów,
+  \item ugruntowania bazowych $\lambda_0$ dla każdej choroby.
+\end{itemize}
+
+\subsection{Dane epidemiologiczne}
+
+Hazard Ratios (HR) używane w modelu pochodzą z najpoważniejszych źródeł kardiologicznych i onkologicznych:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Risk Factor} & \textbf{Choroba} & \textbf{Źródło} \\
+\midrule
+smoking & CVD & Framingham Heart Study, wytyczne ESC \\
+smoking & Lung Cancer & CDC, IARC (International Agency for Research on Cancer) \\
+obesity & CVD & Framingham, American Heart Association \\
+hypertension & CVD & Wytyczne ESC (European Society of Cardiology) \\
+high cholesterol & CVD & Framingham, ATP III (Adult Treatment Panel III) \\
+physical inactivity & CVD & WHO, AHA \\
+family history & CVD/Cancer & Framingham, BRCA studies \\
+alcohol abuse & CVD & Meta-analiza prospektywnych kohortowych \\
+\bottomrule
+\end{tabular}
+\caption{Źródła dla Hazard Ratios.}
+\end{table}
+
+\begin{infobox}
+\textbf{Synteza danych.} ABM bierze \emph{demografię} z GUS i Białystoku+ (skala populacji), \emph{epidemiologię} z literatury naukowej (skala indywidualna). Nakładamy je za pomocą modelu Coxa Proportional Hazards.
+\end{infobox}
+
+\newpage
+% ============================================================
+\section{Architektura modelu}
+% ============================================================
+
+\subsection{Klasy obiektowe}
+
+Model jest napisany w Pythonie 3.12 z paradygmatu zorientowanego obiektowo. Pięć klas:
+
+\begin{itemize}[leftmargin=*, itemsep=4pt]
+  \item \textbf{\texttt{Citizen}} --- pojedynczy agent populacji. Posiada wiek, płeć, choroby, RF, biologiczną pamięć Coxa.
+  \item \textbf{\texttt{Household}} --- gospodarstwo domowe. Przechowuje \emph{listę ID} członków (nie obiekty --- aby uniknąć cykli).
+  \item \textbf{\texttt{Zone}} --- strefa geograficzna. Cztery strefy w modelu, różniące się jakością powietrza, dostępem do opieki i gęstością.
+  \item \textbf{\texttt{DiseaseModel}} --- definicje chorób, disability weights, prevalencje, oraz cztery macierze parametrów modelu Coxa.
+  \item \textbf{\texttt{SimulationEngine}} --- główny silnik. Zarządza populacją, gospodarstwami, statystykami; wykonuje pętlę miesięczną.
+\end{itemize}
+
+\subsection{Struktura danych: Dict[int, Citizen]}
+
+Populacja jest przechowywana jako słownik \texttt{citizens: Dict[int, Citizen]}. Wybór tej struktury nie jest przypadkowy:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Kryterium} & \texttt{Dict[int, Citizen]} & \texttt{List[Citizen]} \\
+\midrule
+Lookup po ID                & $O(1)$           & $O(n)$ \\
+Usunięcie martwych          & nie trzeba (flaga \texttt{alive}) & drogie przesunięcia \\
+Nowe narodziny              & \texttt{citizens[id] = newborn} & \texttt{append()} \\
+Stabilność referencji       & stałe ID         & indeksy przesuwają się \\
+\bottomrule
+\end{tabular}
+\caption{Porównanie struktur danych.}
+\end{table}
+
+\textbf{Kluczowy szczegół.} Martwi agenci \emph{nie są usuwani} ze słownika. Otrzymują flagę \texttt{alive = False}. Dzięki temu:
+\begin{itemize}
+  \item gospodarstwo może sprawdzić czy członek żyje bez \texttt{KeyError},
+  \item statystyki retrospektywne są możliwe,
+  \item unika się kosztownej przebudowy słownika.
+\end{itemize}
+
+\subsection{Pętla symulacji}
+
+Każda iteracja reprezentuje jeden miesiąc (1 rok = 12 iteracji). Pseudokod:
+
+\begin{lstlisting}
+for month in range(600):                  # 50 lat x 12 miesiecy
+    age_all()                             # kazdy agent: age_months += 1
+    handle_deaths()                       # 3-fazowy model Coxa:
+        # a) akumulacja H_cum dla kazdej choroby
+        # b) inicjacja choroby z P = 1 - exp(-delta_h)
+        # c) mortality = q_x * cox_mult * MM
+    handle_births()                       # ASFR * FM * redukcja_chorob
+    handle_household_splits()             # dorosli 25+ opuszczaja domy
+    update_health_states()                # progresja stanow zdrowia
+    if month % 12 == 0:
+        collect_yearly_stats()            # piramida wieku, populacja itp.
+\end{lstlisting}
+
+Skala obliczeń: $50\,000$ agentów $\times$ 600 iteracji $\times \approx 6$ podkroków per agent $\approx 1{,}8 \times 10^8$ operacji na pojedynczą symulację. Czas wykonania: $\sim$90 sekund. Gridsearch 144 punktów przy zrównoleglnieniu na 10 rdzeniach: $\sim$50 minut.
+
+\newpage
+% ============================================================
+\section{Demografia bazowa}
+% ============================================================
+
+\subsection{Lookup śmiertelności --- algorytm floor bracket}
+
+Funkcja \texttt{\_get\_mortality\_rate(age, sex)} znajduje wiekowy bracket w tabeli śmiertelności. Krytyczny szczegół: używamy \emph{floor}, nie \emph{nearest}.
+
+\begin{formulabox}
+\[
+q_x(\text{age}, \text{sex}) = \text{MORTALITY\_TABLE}[\text{bracket}(\text{age})][\text{sex}]
+\]
+\[
+\text{bracket}(\text{age}) = \max\{a \in \text{table\_keys} : a \leq \text{age}\}
+\]
+\end{formulabox}
+
+\textbf{Przykład:} agent w wieku 63 lat. Klucze tabeli: $\ldots, 60, 65, 70, \ldots$
+\begin{itemize}
+  \item Floor: 60 (bo $60 \leq 63 < 65$). Stawka dla $q_{60}$. \emph{Poprawne.}
+  \item Nearest: 65 (odległość 2 vs 3). Stawka dla $q_{65}$. \emph{Błąd, agent dostaje stawkę dla \emph{starszego} bracketu.}
+\end{itemize}
+
+Tę poprawkę dodaliśmy podczas kalibracji --- przed nią osoby w wieku 60--64 miały 53\,\% wyższą śmiertelność niż powinny.
+
+\subsection{Lookup płodności}
+
+Analogicznie dla płodności --- 5-letnie bracketu:
+\[
+\mathrm{ASFR}(\text{age}) = \begin{cases}
+\mathrm{FERTILITY\_TABLE}[\lfloor \text{age} / 5 \rfloor \cdot 5] & \text{jeśli } 15 \leq \text{age} \leq 50 \\
+0 & \text{w przeciwnym razie}
+\end{cases}
+\]
+
+Miesięczne prawdopodobieństwo urodzenia (po uwzględnieniu zmiennej $\mathrm{FM}$ = fertility multiplier oraz redukcji przez choroby):
+\begin{formulabox}
+\[
+P_{\text{birth, monthly}} = \frac{\mathrm{ASFR}(\text{age})}{12} \cdot \mathrm{FM} \cdot \text{disease\_reduction}
+\]
+\[
+\text{disease\_reduction} = \max(1 - 0{,}02 \cdot n_{\text{cond}} - 0{,}04 \cdot \text{disability\_score},\ 0{,}7)
+\]
+\end{formulabox}
+
+Limit 0{,}7 zapobiega temu, aby choroby zredukowały płodność do zera --- empirycznie nawet kobiety z wieloma chorobami zachowują niemałą płodność.
+
+\subsection{Wskaźniki agregowane: CBR, CDR, TFR, NGR}
+
+\subsubsection{Crude Birth Rate (surowy współczynnik urodzeń)}
+
+CBR mierzy liczbę urodzeń żywych na 1000 mieszkańców w ciągu roku.
+\begin{formulabox}
+\[
+\mathrm{CBR} = \frac{B_{\text{rok}}}{N} \times 1000 \quad [\promile]
+\]
+\end{formulabox}
+gdzie $B_{\text{rok}}$ --- liczba urodzeń w roku, $N$ --- średnia populacja.
+
+\textbf{Wartości:}
+\begin{itemize}
+  \item Polska 2021 (GUS): $\mathrm{CBR} \approx 8{,}5\promile$
+  \item Model po kalibracji (FM=1{,}0): $\mathrm{CBR} = 8{,}30\promile$ \checkmark
+\end{itemize}
+
+\textbf{Ograniczenie.} CBR jest \emph{surowy} (crude), bo nie koryguje na strukturę wiekową. Społeczeństwo z większą frakcją kobiet w wieku 20--35 lat będzie miało wyższe CBR przy tej samej skłonności do rodzenia.
+
+\subsubsection{Crude Death Rate (surowy współczynnik zgonów)}
+
+\begin{formulabox}
+\[
+\mathrm{CDR} = \frac{D_{\text{rok}}}{N} \times 1000 \quad [\promile]
+\]
+\end{formulabox}
+
+\textbf{Wartości:}
+\begin{itemize}
+  \item Polska 2021 (GUS): $\mathrm{CDR} \approx 13{,}5\promile$
+  \item Model po kalibracji (MM=1{,}0): $\mathrm{CDR} = 15{,}6\promile$ (lekkie zawyżenie --- patrz \S\ref{sec:kalibracja})
+\end{itemize}
+
+\subsubsection{Natural Growth Rate}
+
+\begin{formulabox}
+\[
+\mathrm{NGR} = \mathrm{CBR} - \mathrm{CDR} \quad [\promile/\text{rok}]
+\]
+\end{formulabox}
+
+\textbf{Wartości:}
+\begin{itemize}
+  \item Polska 2021: $\mathrm{NGR} = 8{,}5 - 13{,}5 = -5{,}0\promile/\text{rok}$
+  \item Model (FM=MM=1{,}0): $\mathrm{NGR} = 8{,}30 - 15{,}60 = -7{,}3\promile/\text{rok}$
+\end{itemize}
+
+Wzrost populacji w horyzoncie 50 lat (proxy analityczny):
+\begin{formulabox}
+\[
+\text{score}(50) = \left( \left(1 + \frac{\mathrm{NGR}}{1000}\right)^{50} - 1 \right) \times 100\,\%
+\]
+\end{formulabox}
+
+\subsubsection{Relacja CBR$\leftrightarrow$TFR}
+
+CBR i TFR są powiązane przez frakcję kobiet w wieku rozrodczym:
+\begin{formulabox}
+\[
+\mathrm{CBR} \approx \mathrm{TFR} \cdot \frac{\text{frakcja kobiet 15--50}}{\text{długość okresu rozrodczego}} \approx \mathrm{TFR} \cdot \frac{0{,}23}{35}
+\]
+\end{formulabox}
+
+\textbf{Weryfikacja:} przy $\mathrm{TFR} = 1{,}28$:
+\[
+\mathrm{CBR} \approx 1{,}28 \cdot \frac{0{,}23}{35} \approx 0{,}0084 = 8{,}4\promile
+\]
+co odpowiada wartości empirycznej z modelu (8{,}30\promile). To samo równanie tłumaczy, dlaczego \emph{flat-rate fertility} (jednakowa stopa dla wszystkich wieków) nie działa --- bo urodzenia pochodzą tylko od $\sim$23\,\% populacji.
+
+\newpage
+% ============================================================
+\section{Model dynamicznego ryzyka --- Cox Proportional Hazards}
+% ============================================================
+
+To jest \textbf{rdzeń projektu} --- przejście od statycznych mnożników mortality do dynamicznego modelu akumulacji ryzyka.
+
+\subsection{Motywacja: dlaczego Cox?}
+
+Pierwotna wersja modelu używała \textbf{statycznych mnożników mortality}: \texttt{risk\_mult *= 1.1} dla palaczy, \texttt{*1.05} dla otyłych. Problemy tego podejścia:
+
+\begin{itemize}[leftmargin=*]
+  \item 30-letni palacz miał identyczne ryzyko jak 60-letni --- co biologicznie nieprawdziwe (szkody akumulują się przez dziesięciolecia).
+  \item Brak mechanizmu \emph{dynamicznej inicjacji choroby} --- agent albo miał chorobę od początku, albo nigdy.
+  \item Brak \emph{biologicznej pamięci} agenta --- ekspozycja w młodości nie wpływała na ryzyko w starszym wieku inaczej niż przez stały mnożnik.
+\end{itemize}
+
+Po refaktorze model używa \textbf{Cox Proportional Hazards} z skumulowanym hazardem. Każdy agent ma "biologiczną pamięć" $\cum[,d]$ rosnącą wraz z ekspozycją na RF.
+
+\subsection{Formalizm matematyczny}
+
+\subsubsection{Miesięczny przyrost hazardu}
+
+Dla agenta w wieku $a$ (lata) z risk factors $X = (X_1, \ldots, X_7) \in \{0,1\}^7$ i dla choroby $d \in \{\mathrm{CVD}, \mathrm{Lung\ Cancer}\}$:
+
+\begin{formulabox}
+\[
+\Delta h_d(a, X) = \baseh_{0,d} \cdot \exp(\gamma_{\text{age},d} \cdot (a - 30)) \cdot \exp\left(\sum_{i=1}^{7} \beta_{d,i} \cdot X_i\right)
+\]
+\end{formulabox}
+
+Symbole:
+\begin{itemize}[leftmargin=*]
+  \item $\baseh_{0,d}$ --- bazowy hazard miesięczny w wieku 30 lat (\texttt{BASELINE\_HAZARD}); jest to ryzyko inicjacji choroby u "uśrednionej" osoby bez RF w referencyjnym wieku.
+  \item $\gamma_{\text{age},d}$ --- tempo wzrostu hazardu z wiekiem (\texttt{AGE\_HAZARD\_GROWTH}); model Gompertza, gdzie hazard rośnie wykładniczo.
+  \item $\beta_{d,i} = \ln(\mathrm{HR}_{d,i})$ --- log Hazard Ratio dla RF $i$ względem choroby $d$ (\texttt{HAZARD\_BETA}).
+  \item $X_i \in \{0,1\}$ --- czy agent ma risk factor $i$.
+\end{itemize}
+
+Konwencja $\beta = \ln(\mathrm{HR})$ wynika z definicji modelu Coxa: w wykładniku $\exp(\sum \beta_i X_i)$ obecność $X_i = 1$ mnoży hazard przez $e^{\beta_i} = \mathrm{HR}_i$. To zapewnia interpretowalność współczynników.
+
+\subsubsection{Akumulacja (cumulative hazard)}
+
+\begin{formulabox}
+\[
+\cum[,d](T) = \sum_{t=0}^{T} \Delta h_d(t)
+\]
+\end{formulabox}
+
+$\cum$ rośnie monotonicznie i reprezentuje \textbf{biologiczne uszkodzenie skumulowane}. Dwóch palaczy w wieku 60 lat może mieć różne $\cum$ jeśli jeden zaczął palić w 20 r.ż., a drugi w 40.
+
+\subsubsection{Inicjacja choroby (Poisson approximation)}
+
+Przy małym $\Delta h$, prawdopodobieństwo zdarzenia w pojedynczym kroku jest dobrze przybliżone przez:
+\begin{formulabox}
+\[
+P(\text{onset}_d \,|\, \text{not\_yet\_sick}) = 1 - \exp(-\Delta h_d(t))
+\]
+\end{formulabox}
+
+Wyprowadzenie: dla procesu Poissona o intensywności $\Delta h$, prawdopodobieństwo \emph{co najmniej jednego} zdarzenia w jednostce czasu wynosi $1 - e^{-\Delta h}$. Dla małych $\Delta h$: $1 - e^{-\Delta h} \approx \Delta h$.
+
+W kodzie: jeśli $\text{rng.random()} < 1 - \exp(-\Delta h)$, to choroba zostaje aktywowana (\texttt{citizen.diseases[d] = 1}).
+
+\subsubsection{Mortality z Cox-multiplier}
+
+Mortality dla agentów z aktywnymi chorobami:
+
+\begin{formulabox}
+\begin{align*}
+P_{\text{death}}(t) &= q_x(\text{age}, \text{sex}) \cdot \text{disease\_mult} \cdot \text{cox\_mult} \cdot \mathrm{MM} \\
+\text{disease\_mult} &= 1 + 0{,}04 \cdot \text{disability\_score} \\
+\text{disability\_score} &= \sum_d \indicator{d \text{ active}} \cdot \text{DW}_d \\
+\text{cox\_mult} &= \exp\left(\sum_d \gamma_d \cdot \min(\cum[,d],\, \text{cap})\right)
+\end{align*}
+\end{formulabox}
+
+gdzie:
+\begin{itemize}[leftmargin=*]
+  \item $q_x$ --- bazowa stopa GUS (z tabeli śmiertelności),
+  \item $\text{DW}_d$ --- disability weight choroby ($\text{DW}_{\mathrm{CVD}} = 0{,}25$, $\text{DW}_{\mathrm{LC}} = 0{,}55$),
+  \item $\gamma_d$ --- współczynnik MORTALITY\_GAMMA (1{,}2 dla CVD, 2{,}5 dla LC),
+  \item $\text{cap} = 1{,}5$ --- limit zabezpieczający \texttt{exp()} przed wybuchem,
+  \item $\mathrm{MM}$ --- globalny mortality multiplier (zmienna sterująca gridsearchu).
+\end{itemize}
+
+\subsection{Bazowe parametry hazardu}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Choroba} & \textbf{$\baseh_0$} (mies.) & \textbf{Roczny ekv.} & \textbf{$\gamma_{\text{age}}$} & \textbf{Czas podwojenia} \\
+\midrule
+CVD          & $6{,}0 \times 10^{-5}$ & 0{,}72\,\% & 0{,}06   & $\sim$12 lat \\
+Lung Cancer  & $3{,}0 \times 10^{-6}$ & 0{,}036\,\% & 0{,}075 & $\sim$9 lat \\
+\bottomrule
+\end{tabular}
+\caption{Bazowe parametry hazardu chorób.}
+\end{table}
+
+\textbf{Interpretacja:} przy wieku 30 lat, bez żadnych RF, miesięczne prawdopodobieństwo inicjacji CVD wynosi $6 \times 10^{-5}$ (czyli ok.\ 0{,}006\,\%). Przy wieku 70 lat, dalej bez RF, mnożnik wieku to $\exp(0{,}06 \cdot 40) = e^{2{,}4} \approx 11$, więc miesięczne ryzyko wzrasta do $\sim$0{,}066\,\%.
+
+Czas podwojenia hazardu (Gompertz):
+\[
+T_{\text{podwojenia}} = \frac{\ln 2}{\gamma_{\text{age}}} \implies T_{\text{CVD}} = \frac{\ln 2}{0{,}06} \approx 11{,}55 \text{ lat}
+\]
+
+Lung Cancer rośnie z wiekiem \emph{szybciej} ($\gamma = 0{,}075$ vs $0{,}06$) --- odzwierciedla biologię raka, gdzie dłuższa ekspozycja na karcynogeny + akumulacja mutacji somatycznych przyspiesza onset z wiekiem.
+
+\subsection{Macierz $\beta = \ln(\text{HR})$}
+
+Pełna macierz współczynników, pokazana jako $\beta$ i $\mathrm{HR}$ dla intuicji:
+
+\begin{table}[h]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Risk Factor} & \textbf{HR(CVD)} & \textbf{$\beta$(CVD)} & \textbf{HR(LC)} & \textbf{$\beta$(LC)} \\
+\midrule
+smoking               & 2{,}5  & 0{,}916 & \textbf{15{,}0} & \textbf{2{,}708} \\
+obesity               & 1{,}7  & 0{,}531 & 1{,}0           & 0{,}000 \\
+physical\_inactivity  & 1{,}4  & 0{,}336 & 1{,}2           & 0{,}182 \\
+alcohol\_abuse        & 1{,}3  & 0{,}262 & 1{,}3           & 0{,}262 \\
+high\_cholesterol     & 2{,}0  & 0{,}693 & 1{,}0           & 0{,}000 \\
+hypertension\_stage0  & 2{,}2  & 0{,}788 & 1{,}0           & 0{,}000 \\
+family\_history       & 1{,}5  & 0{,}405 & 1{,}5           & 0{,}405 \\
+\bottomrule
+\end{tabular}
+\caption{Pełna macierz Hazard Ratios. Dominacja palenia w raku płuc: HR=15 jest największą wartością.}
+\label{tab:hrmatrix}
+\end{table}
+
+\subsubsection{Multiplikatywność RF}
+
+Risk factors w modelu Coxa działają \textbf{multiplikatywnie}, nie addytywnie:
+
+\begin{formulabox}
+\[
+\text{Relative Risk} = \exp\left(\sum_i \beta_i X_i\right) = \prod_i \mathrm{HR}_i^{X_i}
+\]
+\end{formulabox}
+
+\textbf{Przykład:} palacz z otyłością. Względne ryzyko CVD:
+\[
+\text{RR} = \exp(\beta_{\text{smok}} + \beta_{\text{ob}}) = \exp(0{,}916 + 0{,}531) = \exp(1{,}447) \approx 4{,}25
+\]
+
+To samo otrzymujemy z $\mathrm{HR}_{\text{smok}} \cdot \mathrm{HR}_{\text{ob}} = 2{,}5 \cdot 1{,}7 = 4{,}25$.
+
+\emph{Uwaga:} podejście multiplikatywne nie zakłada interakcji między RF (czyli np.\ że palenie i otyłość wzajemnie się wzmacniają ponad zwykłą multiplikatywność). Jest to standardowe założenie modelu Coxa --- proporcjonalność hazardów.
+
+\subsection{Pełny przykład obliczeniowy}
+
+\textbf{Scenariusz:} 60-letni mężczyzna z paleniem, wysokim cholesterolem i nadciśnieniem. Oblicz miesięczne ryzyko inicjacji CVD.
+
+\begin{enumerate}[leftmargin=*, itemsep=6pt]
+  \item \textbf{Bazowy hazard:}
+  \[
+  \baseh_{0,\text{CVD}} = 6{,}0 \times 10^{-5}
+  \]
+
+  \item \textbf{Współczynnik wieku (Gompertz):}
+  \[
+  \exp(\gamma_{\text{age}} \cdot (a - 30)) = \exp(0{,}06 \cdot 30) = e^{1{,}8} \approx 6{,}05
+  \]
+
+  \item \textbf{Modyfikator RF:}
+  \[
+  \exp(\beta_{\text{smok}} + \beta_{\text{chol}} + \beta_{\text{hyper}}) = \exp(0{,}916 + 0{,}693 + 0{,}788) = e^{2{,}397} \approx 10{,}99
+  \]
+
+  \item \textbf{Wynik:}
+  \[
+  \Delta h = 6{,}0 \times 10^{-5} \cdot 6{,}05 \cdot 10{,}99 \approx 3{,}99 \times 10^{-3}
+  \]
+
+  \item \textbf{Porównanie z baseline (bez RF):}
+  \[
+  \Delta h_{\text{baseline}} = 6{,}0 \times 10^{-5} \cdot 6{,}05 \approx 3{,}63 \times 10^{-4}
+  \]
+  Mnożnik: $\Delta h / \Delta h_{\text{baseline}} = 11{,}0\times$ --- agent ma 11-krotnie wyższe miesięczne ryzyko CVD.
+
+  \item \textbf{Prawdopodobieństwo onset:}
+  \[
+  P(\text{onset}) = 1 - e^{-\Delta h} \approx 1 - 0{,}9960 = 0{,}40\,\% \text{ miesięcznie}
+  \]
+  W skali roku: $1 - (1 - 0{,}004)^{12} \approx 4{,}7\,\%$.
+\end{enumerate}
+
+\subsection{Bezpieczniki numeryczne}
+
+W implementacji modelu zabezpieczamy się przed dwoma problemami:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Brak hazardu u dzieci.} Akumulacja $\cum$ nie zaczyna się przed wiekiem 18 lat:
+  \[
+  \text{effective\_age} = \max(\text{age},\ 18)
+  \]
+  Dzięki temu noworodki i dzieci nie nabywają hazardu (mimo że tabelaryczna $q_x$ pozwala na śmiertelność dziecięcą).
+
+  \item \textbf{Cap na $\cum$ w mortality.} W wykładniku $\exp(\sum \gamma_d \cum[,d])$ używamy:
+  \[
+  \min(\cum[,d],\ 1{,}5)
+  \]
+  To zapobiega wybuchowi numerycznemu przy bardzo wysokim $\cum$ (np.\ palacz przez 50 lat).
+\end{itemize}
+
+\newpage
+% ============================================================
+\section{Czynniki ryzyka --- inicjalizacja i opis}
+% ============================================================
+
+\subsection{Lista 7 czynników ryzyka}
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{smoking} --- palenie tytoniu. Najsilniejszy RF dla raka płuc (HR=15), silny dla CVD (HR=2{,}5).
+  \item \textbf{obesity} --- otyłość (BMI $\geq$ 30). Wpływa głównie na CVD (HR=1{,}7).
+  \item \textbf{physical\_inactivity} --- brak regularnej aktywności fizycznej.
+  \item \textbf{alcohol\_abuse} --- nadużywanie alkoholu (kryterium WHO: $>$ 14 jednostek/tydz.).
+  \item \textbf{high\_cholesterol} --- hipercholesterolemia (cholesterol całkowity $>$ 200 mg/dl). \textit{Uwaga: była wcześniej traktowana jako choroba; refaktor przeniósł ją do RF.}
+  \item \textbf{hypertension\_stage0} --- nadciśnienie pre-clinical (SBP 120--139 lub DBP 80--89 mmHg).
+  \item \textbf{family\_history} --- pozytywny wywiad rodzinny (CVD/rak w pokrewieństwie pierwszego stopnia).
+\end{enumerate}
+
+\subsection{Inicjalizacja wg wieku}
+
+Każdemu agentowi przy tworzeniu populacji losujemy 7 RF z prawdopodobieństwami zależnymi od wieku, kalibrowanymi do danych GUS oraz programu Białystok+:
+
+\begin{lstlisting}
+# Palenie (20-70 lat, peak w wieku 45)
+smoking_prob = 0.25 * (1 - ((age - 45)**2 / 50**2))
+smoking_prob = max(smoking_prob, 0.10)
+
+# Otylosc (rosnie z wiekiem)
+obesity_prob = 0.15 + (age - 20) * 0.008   # 5% -> 45%
+
+# Brak aktywnosci fizycznej (rosnie z wiekiem)
+inactivity_prob = 0.2 + (age - 20) * 0.005  # 10% -> 45%
+
+# Naduzywanie alkoholu (uniform 20-65 lat)
+alcohol_prob = 0.08
+
+# Hipercholesterolemia (rosnie z wiekiem)
+cholesterol_prob = (age - 20) * 0.006  # 1% -> 40%
+
+# Nadcisnienie (rosnie po 30. r.z.)
+hypertension_prob = (age - 30) * 0.008  # 1% -> 35%
+
+# Historia rodzinna (stala, niezalezna od wieku)
+family_history_prob = 0.15
+\end{lstlisting}
+
+\subsection{Wpływ aplikacji interaktywnej}
+
+W aplikacji Streamlit użytkownik może modyfikować prevalencje RF za pomocą \emph{mnożników} (0{,}0 do 3{,}0). Mnożnik 0{,}5 oznacza redukcję prevalencji o połowę (symulacja kampanii zdrowotnej); 1{,}5 --- wzrost o 50\,\% (scenariusz pogorszenia). Te modyfikacje są stosowane do wzorów inicjalizacji:
+\[
+P'_{RF}(\text{age}) = \min(P_{RF}(\text{age}) \cdot \text{slider\_value},\ 1{,}0)
+\]
+
+\newpage
+% ============================================================
+\section{Gridsearch --- optymalizacja parametrów}
+\label{sec:gridsearch}
+% ============================================================
+
+\subsection{Cel}
+
+Gridsearch przeszukuje przestrzeń dwóch parametrów --- \textbf{fertility multiplier (FM)} i \textbf{mortality multiplier (MM)} --- aby znaleźć punkty stabilności populacji.
+
+Przestrzeń poszukiwań:
+\[
+\mathrm{FM} \in \{0{,}40,\ 0{,}59,\ \ldots,\ 2{,}50\}, \quad \mathrm{MM} \in \{0{,}30,\ 0{,}42,\ \ldots,\ 1{,}60\}
+\]
+Razem $12 \times 12 = 144$ kombinacji.
+
+\subsection{Funkcja oceny (score)}
+
+\begin{formulabox}
+\[
+\text{score}(\mathrm{FM},\ \mathrm{MM}) = \frac{N_{\text{final}} - N_{\text{init}}}{N_{\text{init}}} \times 100\,\%
+\]
+\end{formulabox}
+
+\begin{itemize}
+  \item $\text{score} > +2\,\%$ --- populacja rośnie (czerwony obszar na heatmapie),
+  \item $-2\,\% \leq \text{score} \leq +2\,\%$ --- stabilna (zielony/biały),
+  \item $\text{score} < -2\,\%$ --- maleje (niebieski).
+\end{itemize}
+
+\subsection{Trzy tryby gridsearch}
+
+\subsubsection{Tryb 1 --- Proxy analityczny}
+
+Plik: \texttt{grid\_search\_improved\_v3\_fixed.py}.
+
+Używa matematycznego modelu proxy \emph{bez uruchamiania ABM}, skalibrowanego na bazowych CBR/CDR:
+\[
+\text{CBR}_{\text{eff}} = \text{BASE\_CBR} \cdot \mathrm{FM}, \quad \text{CDR}_{\text{eff}} = \text{BASE\_CDR} \cdot \mathrm{MM}
+\]
+\[
+\text{NGR}_{\text{annual}} = \text{CBR}_{\text{eff}} - \text{CDR}_{\text{eff}}
+\]
+\begin{formulabox}
+\[
+\text{score}_{\text{proxy}} = \left( (1 + \text{NGR}_{\text{annual}})^{50} - 1 \right) \times 100
+\]
+\end{formulabox}
+gdzie $\text{BASE\_CBR} = 0{,}00830$, $\text{BASE\_CDR} = 0{,}01560$.
+
+\textbf{Charakterystyka:}
+\begin{itemize}
+  \item Czas: $\sim$1 ms na kombinację, $\sim$30 s na całą siatkę 12×12.
+  \item Założenie: linearna skala CBR $\propto$ FM, CDR $\propto$ MM.
+  \item \textbf{Ograniczenie:} brak modelowania struktury wiekowej, brak feedback loops.
+\end{itemize}
+
+\subsubsection{Tryb 2 --- ABM dla piramid}
+
+Plik: \texttt{gridsearch\_age\_pyramids\_analysis.py}.
+
+Pełne symulacje ABM, ale tylko dla wybranych 21 punktów (3×3 + 3 diagonale). Cel: generowanie piramid wieku do wizualnej inspekcji.
+
+\textbf{Czas:} $\sim$90 s na symulację × 21 punktów = $\sim$30 min (z parallel $\sim$5 min).
+
+\subsubsection{Tryb 3 --- Pełny ABM 12×12}
+
+Plik: \texttt{gridsearch\_full\_abm\_no\_rf.py}.
+
+Uruchamia pełną symulację ABM dla każdego z 144 punktów siatki. Risk factors są wyłączone (\texttt{c.risk\_factors = \{rf: 0 ...\}}) --- celem jest izolowanie efektu samej demografii.
+
+\textbf{Czas:} $\sim$50 min z 10 rdzeniami.
+
+\subsection{Reguła stabilności --- proxy vs ABM}
+
+Po analizie wyników okazuje się, że proxy i pełny ABM dają \textbf{istotnie różne} reguły stabilności.
+
+\subsubsection{Proxy --- liniowa reguła}
+
+Z warunku $\text{CBR}_{\text{eff}} = \text{CDR}_{\text{eff}}$:
+\[
+\text{BASE\_CBR} \cdot \mathrm{FM} = \text{BASE\_CDR} \cdot \mathrm{MM}
+\]
+\begin{formulabox}
+\[
+\mathrm{FM}_{\text{proxy}}(\mathrm{MM}) = \frac{\text{BASE\_CDR}}{\text{BASE\_CBR}} \cdot \mathrm{MM} = 1{,}88 \cdot \mathrm{MM}
+\]
+\end{formulabox}
+
+\subsubsection{ABM --- nieliniowa krzywa nasycenia}
+
+Empirycznie:
+\begin{formulabox}
+\[
+\mathrm{FM}_{\text{ABM}}(\mathrm{MM}) \approx 1{,}50 + 0{,}36 \cdot \tanh(2 \cdot (\mathrm{MM} - 0{,}4))
+\]
+\[
+\lim_{\mathrm{MM} \to \infty} \mathrm{FM}_{\text{ABM}} \approx 2{,}05
+\]
+\end{formulabox}
+
+\subsubsection{Dlaczego proxy się myli?}
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Brak struktury wiekowej.} Niska MM = długie życie = populacja się starzeje = mniej kobiet w wieku 15--50 = realne CBR rośnie \emph{wolniej} niż FM sugeruje.
+  \item \textbf{Brak feedback loops.} Wczesne zgony kohorty rozrodczej zmniejszają przyszłą bazę reprodukcyjną. Proxy nie widzi tego efektu.
+  \item \textbf{Nieliniowa odpowiedź.} Przy bardzo wysokim FM i bardzo niskiej MM proxy daje absurdalne $+122\,\%$ wzrostu. ABM ogranicza do $+50\,\%$ --- bo selekcja śmiertelnościowa i nasycenie struktury wiekowej działają jako ograniczniki.
+\end{enumerate}
+
+Średnia bezwzględna różnica $|\Delta|$ między proxy a ABM dla całej siatki 144 punktów: \textbf{22{,}4 pp}. Lokalnie różnice dochodzą do $\pm 72$ pp.
+
+\subsection{Wyniki kluczowe}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrrl}
+\toprule
+\textbf{FM} & \textbf{MM} & \textbf{Score proxy} & \textbf{Score ABM} & \textbf{Charakter} \\
+\midrule
+0{,}40 & 1{,}60 & $-66{,}5\,\%$ & $-66{,}3\,\%$ & Silny spadek \\
+1{,}93 & 1{,}01 & $+1{,}3\,\%$  & $-0{,}88\,\%$ & \textbf{Stabilny w ABM} \\
+2{,}12 & 1{,}13 & $-0{,}02\,\%$ & $+7{,}2\,\%$  & Stabilny w proxy \\
+2{,}50 & 1{,}00 & $+35{,}7\,\%$ & $+33{,}1\,\%$ & Silny wzrost \\
+2{,}50 & 0{,}30 & $+121{,}9\,\%$ & $+50{,}1\,\%$ & Proxy absurd \\
+\bottomrule
+\end{tabular}
+\caption{Wybrane punkty siatki gridsearch.}
+\end{table}
+
+\textbf{Prawdziwy punkt stabilności (ABM):} $\mathrm{FM} \approx 1{,}93$, $\mathrm{MM} \approx 1{,}01$ (score = $-0{,}88\,\%$).
+
+\newpage
+% ============================================================
+\section{Kalibracja i walidacja}
+\label{sec:kalibracja}
+% ============================================================
+
+\subsection{Sanity check --- spójność modelu z parametrami}
+
+Aby zweryfikować, że model Coxa został zaimplementowany poprawnie, porównujemy empiryczne stosunki ryzyka między grupami (palacze vs niepalący) z teoretycznymi HR z macierzy $\beta$.
+
+Test: 5\,000 agentów przez 10 lat.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Grupa} & \textbf{n} & \textbf{$\cum$ CVD} & \textbf{Prev CVD} & \textbf{$\cum$ LC} & \textbf{Prev LC} \\
+\midrule
+Palacze      & 659  & 0{,}177 & 29{,}7\,\% & 0{,}0423 & 6{,}83\,\% \\
+Niepalący    & 4204 & 0{,}063 & 16{,}7\,\% & 0{,}0027 & 2{,}14\,\% \\
+\midrule
+\textbf{Stosunek} & --- & \textbf{2{,}8×} & --- & \textbf{16×} & --- \\
+\bottomrule
+\end{tabular}
+\caption{Sanity check --- porównanie palacze vs niepalący.}
+\end{table}
+
+\textbf{Weryfikacja:}
+\begin{itemize}
+  \item CVD: stosunek $\cum$ palacze/niepalący = $2{,}8\times$, blisko HR=2{,}5 z macierzy $\beta$. \checkmark
+  \item Lung Cancer: stosunek = \textbf{$16\times$}, niemal dokładnie zgodnie z HR=15 (różnica 7\,\% w granicy błędu statystycznego). \checkmark
+\end{itemize}
+
+\textbf{Wniosek:} model jest matematycznie spójny z parametrami wejściowymi. Każda zmiana w macierzy $\beta$ przełoży się na proporcjonalne zmiany w prevalencjach.
+
+\subsection{Porównanie z GUS}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Wskaźnik} & \textbf{Model (FM=MM=1{,}0)} & \textbf{GUS 2021} & \textbf{Zgodność} \\
+\midrule
+CBR    & 8{,}30\promile & 8{,}5\promile & \checkmark (98\,\%) \\
+CDR    & 15{,}6\promile & 13{,}5\promile & $\sim$ (115\,\% --- patrz uwaga) \\
+TFR    & 1{,}28 & 1{,}26 & \checkmark (101\,\%) \\
+\bottomrule
+\end{tabular}
+\caption{Porównanie wskaźników modelu z GUS Polska 2021.}
+\end{table}
+
+\textbf{Uwaga o CDR.} Model ma nieco zawyżony CDR (15{,}6 vs 13{,}5). Wynika to z tego, że tabele $q_x$ z GUS dotyczą całej populacji (włącznie z osobami chorymi), a w modelu domyślna śmiertelność nie koryguje w dół dla efektu "zdrowej populacji syntetycznej". To akceptowalne odchylenie --- ważne, że punkt stabilności pozostaje wewnątrz siatki parametrów.
+
+\subsection{Historia poprawek}
+
+Podczas kalibracji wykryliśmy i naprawiliśmy szereg błędów. Lista najważniejszych:
+
+\subsubsection{Poprawka 1: odwrócona tabela śmiertelności kobiet (krytyczna)}
+
+\textbf{Problem.} W oryginalnej tabeli kobiety 65--84 lat miały śmiertelność $2\times$ wyższą niż mężczyźni --- dokładnie odwrotnie do rzeczywistości.
+
+\textbf{Skutek.} Kobiety umierały za szybko na starość, populacja kurczyła się dramatycznie, wszystkie scenariusze gridsearch dawały $-43\,\%$ do $-83\,\%$.
+
+\textbf{Naprawa.} Zastąpienie wartości danymi z GUS 2021. Stosunek M/K = 1{,}8 dla wieku 65--75 (mężczyźni $\sim$2× wyższa $q_x$).
+
+\subsubsection{Poprawka 2: zbyt niskie TFR (0{,}68 zamiast 1{,}26)}
+
+Oryginalna tabela ASFR dawała TFR $\approx 0{,}61$ zamiast polskich 1{,}26. Naprawa przez aktualizację ASFR z GUS 2021.
+
+\subsubsection{Poprawka 3: rozkład wiekowy nie sumował się do 1{,}0}
+
+Sumował się do 0{,}565. Po normalizacji osoby 90+ stanowiły 1{,}77\,\% populacji zamiast 1{,}3\,\%. Naprawa: zaktualizowanie do GUS 2021.
+
+\subsubsection{Poprawka 4: lookup śmiertelności --- nearest zamiast floor}
+
+Patrz \S 4.1. Osoby w wieku 60--64 miały 53\,\% wyższą śmiertelność niż powinny.
+
+\subsubsection{Poprawka 5: zbyt silny wpływ chorób na śmiertelność}
+
+Stare mnożniki:
+\begin{lstlisting}
+disease_multiplier = 1.0 + (0.05 * citizen.num_conditions())
+disease_multiplier += 0.10 * citizen.disability_score
+risk_mult *= 1.3   # palenie
+\end{lstlisting}
+
+Nowe (zredukowane do podwójnego nieliczenia z tabelami GUS):
+\begin{lstlisting}
+disease_multiplier = 1.0 + (0.02 * citizen.num_conditions())
+disease_multiplier += 0.04 * citizen.disability_score
+risk_mult *= 1.1   # palenie
+\end{lstlisting}
+
+\subsubsection{Poprawka 6: zbyt silna redukcja płodności przez choroby}
+
+Stary kod pozwalał na redukcję płodności do zera. Dodano podest 0{,}7 ($\max(\cdot, 0{,}7)$).
+
+\subsubsection{Poprawka 7 (kluczowa): dodanie modelu Coxa + refaktor 3$\to$2 chorób}
+
+\begin{itemize}
+  \item Hipercholesterolemia przeniesiona z chorób do RF (\texttt{high\_cholesterol}). Biologicznie poprawne: sama nie powoduje objawów.
+  \item Dodano \texttt{cumulative\_hazard} do \texttt{Citizen}.
+  \item Dodano 4 macierze parametrów do \texttt{DiseaseModel}.
+  \item Przepisano \texttt{handle\_deaths} na 3-fazowy model.
+\end{itemize}
+
+\newpage
+% ============================================================
+\section{Aplikacja interaktywna (Streamlit)}
+% ============================================================
+
+\subsection{Funkcjonalność}
+
+Plik: \texttt{interactive\_simulation\_app.py}. Uruchomienie:
+\begin{lstlisting}[language=bash]
+streamlit run interactive_simulation_app.py
+\end{lstlisting}
+
+\subsubsection{Kontrolki}
+
+\begin{itemize}[leftmargin=*]
+  \item Rozmiar populacji: 1\,000 -- 100\,000 (suwak)
+  \item Czas symulacji: 5 -- 50 lat
+  \item Fertility multiplier (FM): 0{,}5 -- 2{,}5
+  \item Mortality multiplier (MM): 0{,}3 -- 2{,}0
+  \item \textbf{7 suwaków RF:} każdy 0{,}0 (eliminacja) -- 3{,}0 (potrojenie); 1{,}0 = baseline.
+\end{itemize}
+
+\subsubsection{Gotowe scenariusze}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Healthy Population} --- wszystkie RF = 0{,}5
+  \item \textbf{High-Risk} --- wszystkie RF = 1{,}5
+  \item \textbf{Intervention} --- wszystkie RF = 0{,}7
+  \item \textbf{Anti-smoking} --- tylko smoking = 0{,}3, reszta = 1{,}0
+\end{itemize}
+
+\subsubsection{Wyniki i wizualizacje}
+
+\begin{itemize}[leftmargin=*]
+  \item Metryki: populacja końcowa, survival rate, średni wiek.
+  \item \textbf{Piramida wieku} (Plotly interaktywna).
+  \item Prevalencja CVD i Lung Cancer (bar chart).
+  \item Wpływ czynników ryzyka (sortowane wg HR).
+  \item Trendy populacji w czasie (line chart).
+  \item Tabela szczegółowych statystyk.
+  \item Eksport wyników do JSON.
+\end{itemize}
+
+\subsection{Przykładowe przypadki użycia}
+
+\subsubsection{Kampania ograniczania palenia}
+
+\begin{itemize}
+  \item Population: 50\,000
+  \item Years: 50
+  \item Smoking multiplier: 0{,}3 (redukcja 70\,\%)
+  \item Inne RF: 1{,}0 (baseline)
+\end{itemize}
+
+\textbf{Spodziewany wynik:} znaczący spadek raka płuc, niższa zachorowalność CVD, wyższa populacja końcowa.
+
+\subsubsection{Interwencja lifestyle'owa}
+
+\begin{itemize}
+  \item Smoking 0{,}8, Obesity 0{,}7, Physical Inactivity 0{,}6
+  \item Cholesterol 0{,}8, Hypertension 0{,}7, Alcohol 0{,}9
+  \item Family History 1{,}0 (niemodifikowalna)
+\end{itemize}
+
+\textbf{Spodziewany wynik:} znacząca poprawa zdrowia populacji, wyższy survival rate, niższy burden chorobowy.
+
+\newpage
+% ============================================================
+\section{Wnioski}
+% ============================================================
+
+\subsection{Wnioski demograficzne}
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Polska demografia jest deficytowa.} Przy naturalnych parametrach (FM=MM=1{,}0) populacja spada o $\sim 52\,\%$ przez 50 lat. Dla stabilności potrzeba $\mathrm{FM} \approx 1{,}88$ przy MM=1{,}0 --- prawie dwukrotnie wyższej płodności niż obecna.
+
+  \item \textbf{Asymetria wrażliwości.} Model reaguje silniej na zmiany $\mathrm{MM}$ niż na $\mathrm{FM}$ w dolnych zakresach. Przy bardzo niskiej MM (długie życie) nawet niska FM może dać stabilność.
+
+  \item \textbf{Kształt piramidy jest diagnostyczny.} Sama liczba populacji po 50 latach mówi mało; kształt piramidy ujawnia, czy się starzejemy, kurczymy u podstawy, czy mamy odpowiednią strukturę.
+
+  \item \textbf{Nadumieralność mężczyzn.} Wyraźnie widoczna w piramidach jako asymetria po wieku 50 r.ż. (kobiety żyją średnio 7{,}5 lat dłużej w Polsce).
+
+  \item \textbf{Punkt stabilności ABM} przy aktywnym modelu Coxa: $\mathrm{FM} \approx 1{,}93$, $\mathrm{MM} \approx 1{,}01$ (score = $-0{,}88\,\%$).
+\end{enumerate}
+
+\subsection{Wnioski epidemiologiczne}
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt, resume]
+  \item \textbf{Cox cumulative hazard rozdziela demografię od epidemiologii.} Bazowa tabela GUS modeluje populacyjne ryzyko zgonu w danym wieku; model Coxa nakłada na to indywidualne różnice z ekspozycji RF. Dwóch palaczy w wieku 60 może mieć różne ryzyko zgonu w zależności od historii ekspozycji.
+
+  \item \textbf{Palenie dominuje jako risk factor.} HR=15 dla raka płuc to największy współczynnik w macierzy. Palacze mają $\sim 16\times$ wyższe $\cum[,\mathrm{LC}]$ niż niepalący już po 10 latach symulacji. Polityki redukcji palenia mają największy potencjalny wpływ na śmiertelność z konkretnej przyczyny.
+
+  \item \textbf{Wielokrotne RF dla CVD.} Pięć czynników (palenie, hipertensja, hipercholesterolemia, otyłość, inactivity) odzwierciedla wielo-przyczynowość chorób sercowo-naczyniowych. Osoba z 3--4 z nich ma $\exp(\sum \beta) \approx 10\text{--}20\times$ wyższe ryzyko CVD.
+
+  \item \textbf{Refaktor 3$\to$2 chorób był biologicznie poprawny.} Hipercholesterolemia sama w sobie nie jest chorobą powodującą zgon (oryginalna $\text{DW}=0{,}08$ była bardzo niska). Jako risk factor wpływa pośrednio przez CVD (HR=2{,}0), co jest medycznie dokładniejsze.
+\end{enumerate}
+
+\subsection{Wnioski metodologiczne}
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt, resume]
+  \item \textbf{Kalibracja jest kluczowa.} Bez poprawek model dawał biologicznie niemożliwe wyniki (wszystkie scenariusze ujemne). Trzy błędy --- odwrócona tabela + niskie TFR + zbyt silny wpływ chorób --- wzmacniały się nawzajem.
+
+  \item \textbf{ABM wykrywa błędy niedostępne makromodelom.} Odwróconą tabelę kobiet odkryliśmy dzięki temu, że kobiety w wieku 65--75 umierały w modelu szybciej niż mężczyźni --- diagnostyczny sygnał w piramidach.
+
+  \item \textbf{Równoległość jest niezbędna.} Każda symulacja ABM ($50\,000$ agentów, 50 lat) trwa $\sim$90 sekund. Bez \texttt{ProcessPoolExecutor} pełny gridsearch (144 symulacje) trwałby 3{,}5 godziny zamiast $\sim 20$ minut.
+
+  \item \textbf{Strategia 2-stopniowa: proxy $\to$ ABM.} Proxy (30 s) jako szybkie sito do orientacji w przestrzeni parametrów; ABM (50 min) do finalnej weryfikacji. Dla raportów: wyłącznie ABM. Stary proxy zostawiamy jako narzędzie diagnostyczne --- jego rozbieżność z ABM identyfikuje regiony parametrów, gdzie efekty strukturalne dominują.
+
+  \item \textbf{Proxy jest dokładny tylko w wąskim pasie wokół $\mathrm{MM} \approx 1{,}0$} (tam, gdzie został skalibrowany). Poza tym pasem błąd dochodzi do 45--72 pp w score.
+\end{enumerate}
+
+\newpage
+% ============================================================
+\section{Ograniczenia i przyszłe rozszerzenia}
+% ============================================================
+
+\subsection{Aktualne ograniczenia}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Brak migracji.} Model jest demograficznie zamknięty --- nie modeluje migracji wewnętrznej (między strefami) ani zagranicznej. W realnej Polsce migracja jest istotnym czynnikiem demograficznym.
+
+  \item \textbf{Stałe tabele demograficzne.} Polska 2021 (GUS) jest używana niezmiennie przez 50 lat symulacji. W rzeczywistości tabele $q_x$ i ASFR ewoluują --- śmiertelność maleje (postęp medycyny), płodność reaguje na czynniki ekonomiczne i kulturowe.
+
+  \item \textbf{RF statyczne.} W obecnym modelu RF są przyznawane raz przy tworzeniu agenta i nie zmieniają się. Realnie palenie można rzucić, otyłość można odwrócić --- model nie ma mechanizmu \emph{dynamic acquisition/loss}.
+
+  \item \textbf{Tylko 2 choroby.} CVD i Lung Cancer to dominujące chronic diseases, ale model nie obejmuje cukrzycy, COPD, demencji, innych nowotworów.
+
+  \item \textbf{Brak chorób zakaźnych.} Model jest skupiony na chorobach niezakaźnych (NCD). Nie modeluje epidemii (COVID-19, grypa) ani jej wpływu na demografię.
+
+  \item \textbf{Heterogeniczność społeczno-ekonomiczna.} Strefy mają parametry środowiskowe (jakość powietrza, dostęp do opieki), ale ich wpływ na wyniki jest minimalny w obecnej kalibracji.
+\end{itemize}
+
+\subsection{Możliwe rozszerzenia}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{RF progression pipeline.} Dynamiczne nabywanie RF, np.\ smoking $\to$ hypertension $\to$ CVD. Wymagałoby tabel transition probabilities między RF.
+
+  \item \textbf{Intervention modeling.} Symulowanie konkretnych programów zdrowotnych --- np.\ programów NFZ redukcji palenia, kampanii anty-otyłościowych. Możliwa analiza cost-benefit.
+
+  \item \textbf{Spatial distribution.} Zróżnicowanie RF między strefami (np.\ miasto vs wieś), z migracją wewnętrzną i efektami kontekstualnymi.
+
+  \item \textbf{Multi-disease interactions.} Choroby wzajemnie się wpływające --- np.\ cukrzyca jako predyktor CVD; współwystępowanie raka i chorób kardiologicznych.
+
+  \item \textbf{Cost-benefit analysis.} Wycena DALY (Disability-Adjusted Life Years) lub QALY (Quality-Adjusted Life Years) dla różnych interwencji.
+
+  \item \textbf{Pełny gridsearch z aktywnym Coxem.} Obecny gridsearch 12×12 jest \emph{bez} RF. Powtórzenie z aktywnymi RF dałoby nową regułę stabilności (przewidywana: $\mathrm{FM} \approx 1{,}5 \cdot \mathrm{MM}$).
+\end{itemize}
+
+\newpage
+% ============================================================
+\section{Technologie i implementacja}
+% ============================================================
+
+\subsection{Stos technologiczny}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Biblioteka} & \textbf{Zastosowanie} \\
+\midrule
+Python 3.12 & Główny język \\
+NumPy & Operacje numeryczne, \texttt{linspace} dla siatek \\
+Plotly & Interaktywne wykresy HTML (piramidy, Sankey) \\
+SciPy & \texttt{TwoSlopeNorm} dla heatmap \\
+Matplotlib & Heatmapy gridsearch w PNG \\
+\texttt{concurrent.futures} & Równoległe symulacje (\texttt{ProcessPoolExecutor}) \\
+Streamlit & Aplikacja interaktywna \\
+\texttt{random.Random} & Stochastyczność per agent z reproducibility \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Dlaczego \texttt{random.Random}, a nie \texttt{numpy.random}?}
+
+Model jest \emph{sekwencyjny per agent} --- każdy agent losuje niezależnie w pętli. \texttt{random.Random} z seedem zapewnia pełną reproducibility. \texttt{numpy.random} jest lepszy dla operacji wektorowych (całe tablice naraz), co nie pasuje do ABM, gdzie każdy agent ma własny stan.
+
+\subsection{Reproducibility}
+
+Każda symulacja może być uruchomiona z konkretnym seedem (\texttt{random.Random(seed)}). Dzięki temu wyniki są deterministyczne i można je odtworzyć dla weryfikacji.
+
+\newpage
+% ============================================================
+\section{Bibliografia i źródła}
+% ============================================================
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{GUS Polska}. Tablice Trwania Życia 2021. \url{https://stat.gov.pl}
+  \item \textbf{GUS Polska}. Spis Powszechny 2021.
+  \item \textbf{Program Białystok+}. Kohortowe dane medyczne populacji polskiej.
+  \item \textbf{WHO}. Global Health Risks: Mortality and Burden of Disease Attributable to Selected Major Risks.
+  \item \textbf{ESC} (European Society of Cardiology). Guidelines on cardiovascular disease prevention in clinical practice.
+  \item \textbf{CDC}. Smoking \& Tobacco Use --- Health Effects.
+  \item \textbf{IARC} (International Agency for Research on Cancer). Tobacco Smoking and Tobacco Smoke. Monograph 83.
+  \item \textbf{GLOBOCAN 2020}. Global Cancer Observatory.
+  \item \textbf{Framingham Heart Study}. Prospective cohort studies on cardiovascular disease risk factors.
+  \item \textbf{ATP III} (Adult Treatment Panel III). Detection, Evaluation, and Treatment of High Blood Cholesterol.
+  \item \textbf{AHA} (American Heart Association). Heart Disease and Stroke Statistics.
+  \item \textbf{D.R.\ Cox} (1972). Regression Models and Life-Tables. JRSS Series B, 34(2):187--220.
+  \item \textbf{B.\ Gompertz} (1825). On the nature of the function expressive of the law of human mortality. Philosophical Transactions of the Royal Society.
+\end{itemize}
+
+\vfill
+\begin{center}
+\color{muted}\small
+\rule{0.4\textwidth}{0.4pt}\\[8pt]
+Notatki do projektu zespołowego \emph{Urban Health ABM}\\
+ICM UW \ \textbar\ \ 2026
+\end{center}
+
+\end{document}

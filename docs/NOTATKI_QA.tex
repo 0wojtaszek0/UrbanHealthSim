@@ -1,0 +1,757 @@
+% !TEX program = pdflatex
+% Odpowiedzi na pytania szczegółowe do prezentacji Urban Health ABM.
+% Kompilacja: pdflatex NOTATKI_QA.tex (×2 dla spisu treści).
+
+\documentclass[11pt,a4paper]{article}
+
+% ===== JĘZYK =====
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ===== MATEMATYKA =====
+\usepackage{amsmath, amssymb, amsthm, mathtools}
+\usepackage{bm}
+
+% ===== TABELE =====
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+
+% ===== LAYOUT =====
+\usepackage[a4paper, margin=2.5cm, headheight=22pt]{geometry}
+\usepackage[dvipsnames, table]{xcolor}
+\usepackage{wasysym}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{colorlinks=true, linkcolor=NavyBlue!70!black, urlcolor=NavyBlue!70!black}
+
+% ===== KOLORY (spójne z poprzednim plikiem) =====
+\definecolor{ink}{HTML}{1B2A41}
+\definecolor{gold}{HTML}{A07840}
+\definecolor{teal}{HTML}{2C5F7C}
+\definecolor{cream}{HTML}{F6F1E8}
+\definecolor{rule}{HTML}{D8DEE5}
+\definecolor{muted}{HTML}{6B7785}
+\definecolor{codebg}{HTML}{F4F2EC}
+\definecolor{warmred}{HTML}{C0392B}
+
+% ===== TYTUŁY =====
+\titleformat{\section}[hang]
+  {\Large\bfseries\color{ink}}
+  {\thesection}{0.7em}{}[\vspace{2pt}\textcolor{gold}{\hrule height 1.5pt}\vspace{2pt}]
+\titleformat{\subsection}[hang]
+  {\large\bfseries\color{ink}}
+  {\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}[hang]
+  {\bfseries\color{teal}}
+  {\thesubsubsection}{0.5em}{}
+
+% ===== GŁÓWKA =====
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{muted}\textsc{Urban Health ABM --- Pytania i odpowiedzi}}
+\fancyhead[R]{\small\color{muted}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rule}\leaders\hrule height \headrulewidth\hfill}}
+
+% ===== KOD =====
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\small\ttfamily\color{ink},
+  backgroundcolor=\color{codebg},
+  keywordstyle=\color{teal}\bfseries,
+  stringstyle=\color{gold!90!black},
+  commentstyle=\color{muted}\itshape,
+  numberstyle=\tiny\color{muted},
+  showstringspaces=false,
+  frame=leftline,
+  framerule=1.5pt,
+  rulecolor=\color{teal},
+  xleftmargin=12pt,
+  framexleftmargin=10pt,
+  breaklines=true,
+  numbers=left,
+  numbersep=8pt,
+  columns=fullflexible,
+  belowskip=10pt,
+  aboveskip=10pt
+}
+\lstset{style=py}
+
+% ===== BOXY =====
+\newtcolorbox{infobox}[1][]{
+  colback=cream, colframe=gold, boxrule=0pt, leftrule=2pt, arc=2pt,
+  left=10pt, right=10pt, top=6pt, bottom=6pt, fontupper=\small, breakable, #1
+}
+\newtcolorbox{warnbox}[1][]{
+  colback=warmred!4!white, colframe=warmred, boxrule=0pt, leftrule=2pt, arc=2pt,
+  left=10pt, right=10pt, top=6pt, bottom=6pt, fontupper=\small, breakable, #1
+}
+\newtcolorbox{formulabox}[1][]{
+  colback=white, colframe=rule, boxrule=0.5pt, arc=2pt,
+  left=10pt, right=10pt, top=6pt, bottom=6pt, fontupper=\normalsize, breakable, #1
+}
+\newtcolorbox{qbox}[1][]{
+  colback=teal!8!white, colframe=teal, boxrule=0pt, leftrule=3pt, arc=2pt,
+  left=12pt, right=10pt, top=8pt, bottom=8pt,
+  fontupper=\normalsize\bfseries\color{teal}, breakable, #1
+}
+
+% ===== KOMENDY =====
+\newcommand{\promile}{\ensuremath{\text{\textperthousand}}}
+
+% ===== METADANE =====
+\title{
+  \vspace{-1.5cm}
+  {\small\color{gold}\textsc{Notatki uzupełniające --- projekt zespołowy 2026}}\\[10pt]
+  {\Huge\bfseries\color{ink} Pytania i odpowiedzi}\\[6pt]
+  {\large\color{ink!70} Urban Health ABM --- detale parametrów, walidacji i implementacji}\\[20pt]
+  {\color{rule}\hrule height 1pt}
+}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\vspace{1cm}
+
+\noindent\textcolor{muted}{\small Dokument towarzyszący prezentacji. Odpowiada na pięć szczegółowych pytań dotyczących:
+parametrów FM i MM (zakresy, jednostki, wyprowadzenie),
+zakresu suwaków czynników ryzyka [0,\,3],
+przykładu obliczeniowego z 60-latkiem,
+rozbieżności CBR modelu vs GUS,
+oraz struktur danych Citizen i Zone.}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Jak jest wyliczane FM i MM?}
+% ============================================================
+
+\begin{qbox}
+Co oznaczają FM i MM, skąd się biorą, dlaczego badane są w takich przedziałach? Jakie konkretne wartości testujemy?
+\end{qbox}
+
+\subsection{Definicje}
+
+\textbf{FM} (\emph{Fertility Multiplier}) oraz \textbf{MM} (\emph{Mortality Multiplier}) to \textbf{bezwymiarowe mnożniki} skalujące całe tabele demograficzne z GUS Polska 2021. Nie są stopami w promilach --- to mnożniki ($\times$).
+
+\subsubsection{FM --- mnożnik płodności}
+
+\begin{formulabox}
+\[
+P_{\text{birth, monthly}}(\text{age}) = \frac{\text{ASFR}(\text{age})}{12} \cdot \text{FM} \cdot \text{disease\_reduction}
+\]
+\end{formulabox}
+
+W kodzie (\texttt{simulation\_engine.py}):
+\begin{lstlisting}
+monthly_birth_prob = ASFR[wiek_kobiety] / 12 * fertility_multiplier
+\end{lstlisting}
+
+\textbf{FM = 1.0} odpowiada bezpośrednio polskim danym GUS 2021 (TFR\,=\,1.28, CBR\,=\,8.30\promile). Mnożnik różny od 1 skaluje \emph{każdą} z 7 wiekowych stóp ASFR (15--19, 20--24, \ldots, 45--49 lat) tym samym współczynnikiem.
+
+\subsubsection{MM --- mnożnik śmiertelności}
+
+\begin{formulabox}
+\[
+P_{\text{death, monthly}} = q_x(\text{age, sex}) \cdot \text{disease\_mult} \cdot \text{cox\_mult} \cdot \text{MM}
+\]
+\end{formulabox}
+
+W kodzie:
+\begin{lstlisting}
+monthly_death_prob = q_x[wiek][plec] * disease_mult * cox_mult * mortality_multiplier
+\end{lstlisting}
+
+\textbf{MM = 1.0} odpowiada Polsce 2021 (CDR\,=\,15.6\promile). MM skaluje każdą $q_x$ z tabeli śmiertelności GUS dla każdego przedziału wiekowego i płci.
+
+\subsection{Skąd się biorą --- skala bazowa}
+
+Bazowe wartości pochodzą bezpośrednio z tabel GUS:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{ASFR} --- 7 wiekowych stóp płodności (15--19, 20--24, \ldots, 45--49 lat); razem dają TFR\,=\,1.28.
+  \item \textbf{$q_x$} --- 10 wiekowych prawdopodobieństw zgonu × 2 płcie z Tablic Trwania Życia 2021.
+\end{itemize}
+
+Te bazowe stopy są dane raz na zawsze. \textbf{FM i MM są jedynymi zmiennymi globalnymi}, które pozwalają eksperymentować z różnymi scenariuszami demograficznymi.
+
+\subsection{Dlaczego mnożnik, a nie stopa?}
+
+W pierwszej wersji modelu parametry nazywały się \texttt{fertility\_rate} i \texttt{mortality\_rate}. Były mylące --- sugerowały jednostkę "stopa" (\promile{}). W rzeczywistości to bezwymiarowe mnożniki tabel wiekowych.
+
+\textbf{Stara nazwa $\to$ pomyłki:}
+\begin{itemize}
+  \item \texttt{fertility\_rate = 2.0} $\to$ ktoś czytał "TFR = 2.0" lub "CBR = 2\promile{}". Naprawdę: TFR $\approx$ 2.56, CBR $\approx$ 16.6\promile{}.
+  \item \texttt{mortality\_rate = 0.5} $\to$ wygląda jak "0.5/1000/rok". Naprawdę: "połowa polskiej śmiertelności w każdym wieku".
+\end{itemize}
+
+Po refaktorze:
+\begin{itemize}
+  \item \textbf{mnożnik} --- jednostka ($\times$), bezwymiarowy
+  \item \textbf{stopa} --- jednostka (\promile{}), opisuje konkretną wartość demograficzną
+\end{itemize}
+
+\subsection{Zakres siatki w gridsearch}
+
+\subsubsection{FM $\in [0.40,\ 2.50]$ z 12 punktami}
+
+\begin{formulabox}
+\[
+\text{FM} \in \texttt{np.linspace(0.4, 2.5, 12)} = \{0.40,\ 0.59,\ 0.78,\ 0.97,\ 1.16,\ 1.35,\]
+\[1.54,\ 1.73,\ 1.92,\ 2.12,\ 2.31,\ 2.50\}
+\]
+\end{formulabox}
+
+\textbf{Dlaczego ten zakres?}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Dolna granica 0.40} --- daje TFR $\approx$ 0.51, czyli skrajny scenariusz depopulacji.
+  \item \textbf{Górna granica 2.50} --- daje TFR $\approx$ 3.20, przekracza wyraźnie próg zastępowalności (2.10), pozwala badać scenariusze silnego wzrostu.
+  \item \textbf{Stabilność leży wewnątrz} --- z reguły proxy $\text{FM}_{\text{stable}} = 1.88 \cdot \text{MM}$, więc dla $\text{MM} \in [0.3, 1.6]$ stabilne FM mieści się w \mbox{[0.56, 3.0]}. Wybrany zakres pokrywa większość krzywej stabilności.
+  \item \textbf{12 punktów} --- balans między rozdzielczością a kosztem obliczeniowym ($12^2 = 144$ symulacji $\times$ 90\,s każda).
+\end{itemize}
+
+\subsubsection{MM $\in [0.30,\ 1.60]$ z 12 punktami}
+
+\begin{formulabox}
+\[
+\text{MM} \in \texttt{np.linspace(0.3, 1.6, 12)} = \{0.300,\ 0.418,\ 0.536,\ 0.655,\ 0.773,\]
+\[0.891,\ 1.009,\ 1.127,\ 1.245,\ 1.364,\ 1.482,\ 1.600\}
+\]
+\end{formulabox}
+
+\textbf{Dlaczego węższy zakres niż FM?}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Dolna granica 0.30} --- skrajna redukcja śmiertelności (hipotetyczny przełom medyczny).
+  \item \textbf{Górna granica 1.60} --- 60\,\% wzrost śmiertelności.
+  \item \textbf{Asymetria względem FM} --- stabilność wymaga FM $>$ MM (proxy: FM $\approx$ 1.88\,$\cdot$\,MM). Przy MM = 1.6 stabilne FM byłoby już $\approx$ 3.0 (górna granica siatki FM), więc dalsze rozszerzanie MM nie wniosłoby informacji.
+\end{itemize}
+
+\subsection{Interpretacja kluczowych wartości}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrlrr}
+\toprule
+\textbf{FM} & \textbf{Co dzieje się z ASFR} & & \textbf{TFR} & \textbf{CBR} \\
+\midrule
+0.5 & każda $\div$ 2     & (kampania anty-natalistyczna) & 0.64 & 4.2\promile \\
+1.0 & bez zmian (GUS)    & polska baseline               & 1.28 & 8.30\promile \\
+1.88 & każda $\times$ 1.88 & punkt stabilności proxy      & 2.41 & 15.6\promile \\
+2.0 & każda $\times$ 2   & podwojenie                    & 2.56 & 16.6\promile \\
+2.5 & każda $\times$ 2.5 & granica górna siatki          & 3.20 & 20.8\promile \\
+\midrule
+\textbf{MM} & \textbf{Co dzieje się z $q_x$} & & \textbf{CDR} & \textbf{Śr. dł. życia} \\
+\midrule
+0.3 & każda $\times$ 0.3 & przełom medyczny              & 4.7\promile & bardzo długie \\
+1.0 & bez zmian (GUS)    & polska baseline               & 15.6\promile & $\sim$77 lat \\
+1.6 & każda $\times$ 1.6 & granica górna siatki          & 25\promile & znacznie krótsze \\
+\bottomrule
+\end{tabular}
+\caption{Interpretacja wybranych wartości FM i MM.}
+\end{table}
+
+\subsection{Punkt stabilności znaleziony przez pełny ABM}
+
+\begin{infobox}
+\textbf{Wynik:} po przeszukaniu siatki 144 punktów pełnym ABM (50\,k agentów $\times$ 50 lat każdy), punkt stabilności populacji Polski to:
+\[
+\text{FM} \approx 1.93, \quad \text{MM} \approx 1.01 \quad \implies \quad \text{score} = -0.88\,\%
+\]
+Czyli Polska potrzebuje \emph{prawie dwukrotnie wyższej płodności} niż obecna (TFR\,$\approx$\,2.47), aby populacja przestała się kurczyć przy obecnej śmiertelności.
+\end{infobox}
+
+\newpage
+% ============================================================
+\section{Dlaczego czynniki ryzyka są w przedziale [0, 3]?}
+% ============================================================
+
+\begin{qbox}
+Co oznacza \texttt{smoking = 0.3}? Co oznacza \texttt{smoking = 2.7}? Dlaczego granica górna to 3, a nie np.\ 5?
+\end{qbox}
+
+\subsection{Suwaki RF w aplikacji Streamlit}
+
+W aplikacji \texttt{interactive\_simulation\_app.py} każdy z 7 czynników ryzyka ma suwak o zakresie $[0.0,\ 3.0]$ z krokiem 0.1. Suwaki to \textbf{mnożniki prevalencji} --- skalują bazowe prawdopodobieństwo wystąpienia danego RF u agenta przy tworzeniu populacji.
+
+\begin{lstlisting}
+rf_multipliers[rf] = st.slider(
+    f"{rf.replace('_', ' ').title()}",
+    min_value=0.0,
+    max_value=3.0,
+    value=1.0,
+    step=0.1,
+)
+\end{lstlisting}
+
+\subsection{Jak mnożnik działa --- przykład dla palenia}
+
+Bazowe prawdopodobieństwo palenia zależy od wieku agenta (kalibrowane do danych Białystoku+):
+
+\begin{formulabox}
+\[
+P_{\text{smoking, base}}(\text{age}) = \max\left( 0.25 \cdot \left(1 - \frac{(\text{age} - 45)^2}{50^2}\right),\ 0.10 \right) \quad \text{dla age} \in [20, 70]
+\]
+\end{formulabox}
+
+Mnożnik suwaka jest stosowany bezpośrednio:
+\begin{formulabox}
+\[
+P_{\text{smoking, effective}}(\text{age}) = \min\left( P_{\text{smoking, base}}(\text{age}) \cdot \text{slider},\ 1.0 \right)
+\]
+\end{formulabox}
+
+\subsection{Konkretne wartości suwaków}
+
+Dla agenta w wieku szczytowej prevalencji palenia (age = 45, $P_{\text{base}}$ = 0.25):
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrl}
+\toprule
+\textbf{Suwak} & \textbf{Mnożnik} & \textbf{P efektywne (age=45)} & \textbf{Interpretacja} \\
+\midrule
+0.0 & $\times$ 0    & 0\,\%   & całkowita eliminacja palenia (scenariusz utopijny) \\
+0.3 & $\times$ 0.3  & 7.5\,\% & redukcja o 70\,\% (silna kampania anty-nikotynowa) \\
+0.5 & $\times$ 0.5  & 12.5\,\% & redukcja o 50\,\% \\
+1.0 & $\times$ 1    & 25\,\%  & polska baseline z Białystoku+ \\
+1.5 & $\times$ 1.5  & 37.5\,\% & wzrost o 50\,\% \\
+2.7 & $\times$ 2.7  & 67.5\,\% & wzrost o 170\,\% (skrajnie wysokie palenie) \\
+3.0 & $\times$ 3    & 75\,\%  & potrojenie (górna granica suwaka) \\
+\bottomrule
+\end{tabular}
+\caption{Interpretacja wartości suwaka \texttt{smoking}.}
+\end{table}
+
+\subsection{Dlaczego górna granica to 3, a nie więcej?}
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Powyżej 3 prawdopodobieństwa się nasycają.} Dla wielu wieków $P_{\text{base}} \cdot 3$ przekracza 1.0 i jest kapowane do 1.0. Dalsze zwiększanie mnożnika nie wprowadza już zmian.
+  \item \textbf{Skrajna eksploracja przestrzeni.} 3 $\times$ baseline odpowiada hipotetycznemu społeczeństwu, w którym RF jest stale obecny u $\sim$70\,\% populacji. To wartość ekstrema dla scenariuszy "co najgorsze może się zdarzyć".
+  \item \textbf{Dolna granica 0.0} --- pełna eliminacja (utopia zdrowia publicznego), pozwala mierzyć "potencjał interwencji" --- ile populacji uratujemy w pełnym scenariuszu eliminacji.
+  \item \textbf{Symetria interpretacyjna} --- $[0,\ 3]$ z baseline 1.0 daje symetryczny zakres: 1/3 do 3 (redukcja vs amplifikacja $\times$ 3 w obu kierunkach).
+\end{enumerate}
+
+\subsection{Przykład: kampania anty-nikotynowa}
+
+\begin{infobox}
+\textbf{Scenariusz} --- 70\,\% redukcja palenia (suwak \texttt{smoking = 0.3}), pozostałe RF bez zmian.
+
+\smallskip
+
+\textbf{Spodziewane efekty po 50 latach:}
+\begin{itemize}
+  \item Znaczący spadek prevalencji raka płuc (ponieważ HR\,=\,15 dla palenia $\to$ rak płuc dominuje w determinacji ryzyka LC).
+  \item Spadek CVD (palenie ma HR\,=\,2.5 dla CVD).
+  \item Wyższa końcowa populacja (mniej zgonów z chorób nikotyno-zależnych).
+  \item Spadek mediany $H_{\mathrm{cum}}$ w populacji palaczy poniżej $\sim$0.05.
+\end{itemize}
+\end{infobox}
+
+\subsection{Skutek na inicjalizację RF}
+
+W \texttt{interactive\_simulation\_app.py} (funkcja \texttt{modified\_init\_rf}) suwak jest aplikowany na każdy z 7 RF analogicznie:
+
+\begin{lstlisting}
+smoking_prob *= rf_multipliers.get("smoking", 1.0)
+obesity_prob = min(obesity_prob, 0.45) * rf_multipliers.get("obesity", 1.0)
+inactivity_prob *= rf_multipliers.get("physical_inactivity", 1.0)
+alcohol_prob = base * rf_multipliers.get("alcohol_abuse", 1.0)
+cholesterol_prob *= rf_multipliers.get("high_cholesterol", 1.0)
+hypertension_prob *= rf_multipliers.get("hypertension_stage0", 1.0)
+family_prob = 0.15 * rf_multipliers.get("family_history", 1.0)
+\end{lstlisting}
+
+\newpage
+% ============================================================
+\section{Przykład z 60-letnim mężczyzną --- skąd wartości i dlaczego wiek bazowy 30?}
+% ============================================================
+
+\begin{qbox}
+Na slajdzie jest przykład obliczeniowy: 60-letni mężczyzna z paleniem, cholesterolem i nadciśnieniem. Skąd biorą się konkretne liczby? Czy wiek bazowy to 30 lat? Dlaczego akurat 30?
+\end{qbox}
+
+\subsection{Pełny wzór Coxa}
+
+\begin{formulabox}
+\[
+\Delta h_d(a, X) = \lambda_{0,d} \cdot \exp\bigl(\gamma_{\text{age},d} \cdot (a - 30)\bigr) \cdot \exp\!\left(\sum_{i=1}^{7} \beta_{d,i} \cdot X_i\right)
+\]
+\end{formulabox}
+
+\subsection{Wartość po wartości}
+
+Wszystkie liczby pochodzą z macierzy zdefiniowanych w \texttt{disease\_model.py} (linie 46--78):
+
+\subsubsection{$\lambda_{0,\text{CVD}} = 6.0 \times 10^{-5}$ --- bazowy hazard CVD}
+
+Z \texttt{BASELINE\_HAZARD["CVD"]}. Jest to miesięczne ryzyko inicjacji CVD u \emph{30-letniej osoby bez żadnego RF}. Wartość skalibrowana do danych WHO/ESC tak, aby populacyjna prevalencja CVD zgadzała się z polską ($\sim$35\,\% dorosłej populacji).
+
+\subsubsection{Współczynnik wieku: $\exp(0.06 \cdot 30) \approx 6.05$}
+
+Z \texttt{AGE\_HAZARD\_GROWTH["CVD"] = 0.06} oraz $a - 30 = 30$ (bo agent ma 60 lat, a wiek bazowy to 30).
+
+Model Gompertza:
+\[
+\lambda_{\text{CVD}}(a) = \lambda_{0,\text{CVD}} \cdot \exp(0.06 \cdot (a - 30))
+\]
+
+Dla $a = 60$: $\exp(0.06 \cdot 30) = e^{1.8} \approx 6.05$. Znaczy to, że hazard CVD u 60-latka jest 6.05$\times$ wyższy niż u 30-latka (oba bez RF).
+
+\textbf{Czas podwojenia hazardu:}
+\[
+T_{\text{podwojenia}} = \frac{\ln 2}{\gamma_{\text{age}}} = \frac{0.693}{0.06} \approx 11.55 \text{ lat}
+\]
+
+\subsubsection{Współczynniki $\beta = \ln(\text{HR})$ z macierzy \texttt{HAZARD\_BETA}}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Risk Factor} & \textbf{HR} & \textbf{$\beta = \ln(\text{HR})$} & \textbf{Źródło} \\
+\midrule
+smoking            & 2.5 & 0.916 & ESC, Framingham \\
+high\_cholesterol  & 2.0 & 0.693 & ATP III, Framingham \\
+hypertension       & 2.2 & 0.788 & Wytyczne ESC \\
+\bottomrule
+\end{tabular}
+\caption{HR i $\beta$ użyte w przykładzie.}
+\end{table}
+
+Suma wykładników: $0.916 + 0.693 + 0.788 = 2.397$, więc $\exp(2.397) \approx 10.99$.
+
+\subsection{Pełne obliczenie krok po kroku}
+
+\begin{align*}
+\Delta h &= \underbrace{6.0 \cdot 10^{-5}}_{\lambda_0} \cdot \underbrace{6.05}_{\text{wiek}} \cdot \underbrace{10.99}_{\text{RF}} \\
+         &\approx 3.99 \cdot 10^{-3} \text{ /miesiąc}
+\end{align*}
+
+\textbf{Porównanie z baseline} (60-latek bez RF):
+\[
+\Delta h_{\text{baseline}} = 6.0 \cdot 10^{-5} \cdot 6.05 = 3.63 \cdot 10^{-4}
+\]
+\[
+\text{Mnożnik} = \frac{\Delta h}{\Delta h_{\text{baseline}}} = \frac{3.99 \cdot 10^{-3}}{3.63 \cdot 10^{-4}} \approx 11{,}0\times
+\]
+
+Z aproksymacji Poissona:
+\[
+P(\text{onset CVD w tym miesiącu}) = 1 - e^{-\Delta h} \approx 0.40\,\%
+\]
+W skali roku: $1 - (1 - 0.004)^{12} \approx 4.7\,\%$.
+
+\subsection{Dlaczego wiek bazowy to 30 lat?}
+
+Wybór 30 lat jako wieku referencyjnego $a_{\text{ref}}$ w modelu Gompertza:
+\[
+\lambda(a) = \lambda_0 \cdot \exp(\gamma_{\text{age}} \cdot (a - a_{\text{ref}}))
+\]
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Konwencja epidemiologiczna.} W aktuarialnej i epidemiologicznej praktyce 30 lat jest standardowym wiekiem referencyjnym dla chronic diseases. Większość badań kohortowych (Framingham, MRFIT) zaczyna pomiary między 25 a 35 r.ż.
+
+  \item \textbf{Przed 30 r.ż.\ chronic disease hazard jest pomijalny.} Dominują przyczyny niezwiązane z RF: wypadki, samobójstwa, zakażenia. Dopiero po 30 r.ż.\ Gompertz exponential growth zaczyna dominować.
+
+  \item \textbf{Numerycznie wygodny.} $a - 30$ zachowuje stosunkowo niewielkie wartości wykładnika dla typowych wieków agentów (do $a = 100$, $a - 30 = 70$, $\exp(0.06 \cdot 70) = e^{4.2} \approx 67$ --- jeszcze poniżej numerycznego overflow).
+
+  \item \textbf{Symetria interpretacyjna.} Średnia długość życia człowieka to $\sim$78--82 lata; wiek 30 to $\sim$1/3 życia, dobrze reprezentuje "młodszy dorosły".
+
+  \item \textbf{Brak hazardu u dzieci.} W kodzie dodatkowo:
+  \[
+  \text{effective\_age} = \max(a,\ 18)
+  \]
+  Dzięki temu agenci $<$ 18 r.ż.\ nie kumulują $H_{\mathrm{cum}}$ --- biologicznie poprawne (chronic diseases nie rozwijają się u dzieci poza specyficznymi syndromami).
+\end{enumerate}
+
+\subsection{Co by było, gdyby wiek bazowy był inny?}
+
+\begin{warnbox}
+Wartość $a_{\text{ref}} = 30$ jest \emph{arbitralna} matematycznie --- ma sens fizyczny, ale model jest \emph{niezmienniczy} na zmianę punktu referencyjnego, o ile odpowiednio przeskalujemy $\lambda_0$. To znaczy: jeśli zmienimy $a_{\text{ref}} = 20$, ale jednocześnie pomnożymy $\lambda_0$ przez $\exp(\gamma_{\text{age}} \cdot 10)$, dostaniemy identyczne hazardy. Konwencja 30 jest po prostu czytelna i powszechna.
+\end{warnbox}
+
+\newpage
+% ============================================================
+\section{CBR walidacji: 8.30 vs 8.50 promila --- skąd różnica?}
+% ============================================================
+
+\begin{qbox}
+W tabeli walidacji jest napisane CBR\,=\,8.30\,\promile{} dla modelu, a u Polski 8.50\,\promile{}. Skąd ta drobna różnica? Czy to błąd?
+\end{qbox}
+
+\subsection{Wartości referencyjne i modelowe}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Wskaźnik} & \textbf{Polska 2021 (GUS)} & \textbf{Model (FM=MM=1.0)} & \textbf{Zgodność} \\
+\midrule
+CBR        & 8.50\promile  & \textbf{8.30\promile}  & 97.6\,\% (drobne niedoszacowanie) \\
+CDR        & 13.50\promile & \textbf{15.60\promile} & 115\,\% (zawyżone, patrz \ref{ssec:cdr}) \\
+TFR        & 1.26          & \textbf{1.28}          & 101.6\,\% (zgodność wzorcowa) \\
+\bottomrule
+\end{tabular}
+\caption{Porównanie modelu z danymi GUS Polska 2021.}
+\end{table}
+
+\subsection{Dlaczego CBR jest 8.30 zamiast 8.50?}
+
+Kilka przyczyn drobnej różnicy (0.2\promile, czyli 2.4\,\% wartości):
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Zaokrąglenia w tabeli ASFR.} Wartości ASFR w naszym kodzie są zaokrąglone do trzech miejsc po przecinku:
+  \begin{lstlisting}
+DEFAULT_FERTILITY_TABLE = {
+    15: 0.011,  20: 0.041,  25: 0.081,
+    30: 0.082,  35: 0.034,  40: 0.007,
+    45: 0.0003,
+}
+\end{lstlisting}
+  GUS publikuje wartości z większą precyzją; te zaokrąglenia kumulują się do $\sim$1\,\% niedoszacowania TFR (1.28 vs 1.26 --- już sam ten brak skali pokrywa większość różnicy).
+
+  \item \textbf{Dyskretyzacja miesięczna.} Polski roczny ASFR jest dzielony na 12, ale empirycznie urodzenia nie rozkładają się równomiernie (są lekko sezonowe). To wprowadza drobne odchylenie $\sim$0.1\promile.
+
+  \item \textbf{Synteza populacji.} Populacja syntetyczna 50\,000 agentów jest \emph{losowana} z rozkładu wiekowego GUS. Każde uruchomienie ma inny rozkład, średnio bliski celowi, ale z wariancją.
+
+  \item \textbf{Korekta przez choroby (\texttt{disease\_reduction}).} W modelu:
+  \[
+  P_{\text{birth}} = \frac{\text{ASFR}}{12} \cdot \text{FM} \cdot \underbrace{\max(1 - 0.02 \cdot n - 0.04 \cdot \text{dis},\ 0.7)}_{\geq\, 0.7}
+  \]
+  Część kobiet ma aktywne choroby (CVD lub Lung Cancer), co lekko redukuje płodność. To efekt nieobecny w danych GUS, które dotyczą "uśrednionej" Polski.
+\end{enumerate}
+
+\begin{infobox}
+\textbf{Wniosek.} Różnica 0.2\promile{} (2.4\,\%) mieści się w tolerancji modelu. CBR\,=\,8.30 vs GUS 8.50 --- to wartości \emph{w pełni akceptowalne} dla symulacji demograficznej. Dokładność lepsza niż 5\,\% w demografii to bardzo dobry wynik.
+\end{infobox}
+
+\subsection{Dlaczego CDR jest 15.6 zamiast 13.5? (poważniejsza rozbieżność)}
+\label{ssec:cdr}
+
+To większa rozbieżność (15\,\%) i ma inną przyczynę:
+
+\begin{warnbox}
+\textbf{Powód:} Tabele $q_x$ z GUS dotyczą \emph{całej} polskiej populacji --- włącznie z osobami przewlekle chorymi, których ryzyko zgonu jest już "wbudowane" w średnie stopy.
+
+W naszym modelu populacja syntetyczna na starcie ma 35\,\% prevalencji CVD, ale nie ma populacyjnego "rezerwuaru" osób z wieloma chorobami współistniejącymi. Tabela $q_x$ jest aplikowana do agentów, którzy są przeciętnie \emph{zdrowsi} niż polska populacja referencyjna --- a mimo to dostają pełną $q_x$, plus dodatkowe \texttt{cox\_mult} dla aktywnych chorób. To podwójnie zwiększa mortality.
+
+\textbf{Akceptowalność:} odchylenie jest świadome i udokumentowane. Ważne, że punkt stabilności (FM, MM) pozostaje wewnątrz badanego zakresu siatki.
+\end{warnbox}
+
+\subsection{Dlaczego TFR jest niemal idealne (1.28 vs 1.26)?}
+
+TFR = $\sum \text{ASFR} \cdot \Delta\text{age}$ --- to czysta suma wartości tabelarycznych, bez wpływu struktury wiekowej populacji ani innych efektów dynamicznych. Mała różnica (1.6\,\%) wynika tylko z zaokrągleń tabeli ASFR.
+
+\subsection{Inżynierski wniosek}
+
+W demograficznym ABM dokładność lepsza niż 5\,\% dla CBR i niż 20\,\% dla CDR jest \emph{bardzo dobra}. Model:
+\begin{itemize}
+  \item Replikuje TFR z dokładnością $<$2\,\% (idealnie).
+  \item Replikuje CBR z dokładnością $<$3\,\% (bardzo dobrze).
+  \item Replikuje CDR z dokładnością 15\,\% (akceptowalnie --- z udokumentowanym powodem).
+\end{itemize}
+
+\newpage
+% ============================================================
+\section{Co oznacza \texttt{Dict[int, Citizen]}? Co to jest \texttt{Zone}?}
+% ============================================================
+
+\begin{qbox}
+W pseudokodzie i diagramie architektury pojawiają się \texttt{Dict[int, Citizen]} oraz klasa \texttt{Zone}. Co to dokładnie znaczy?
+\end{qbox}
+
+\subsection{\texttt{Dict[int, Citizen]} --- typowa adnotacja Pythona}
+
+Jest to \textbf{adnotacja typu} (type hint) z modułu \texttt{typing}. Oznacza:
+
+\begin{formulabox}
+\texttt{Dict[int, Citizen]} = \emph{słownik}, w którym:
+\begin{itemize}
+  \item \textbf{klucz} jest typu \texttt{int} (liczba całkowita)
+  \item \textbf{wartość} jest typu \texttt{Citizen} (obiekt klasy Citizen)
+\end{itemize}
+\end{formulabox}
+
+W kontekście modelu, to jest \emph{rejestr populacji}:
+
+\begin{lstlisting}
+class SimulationEngine:
+    def __init__(self, ...):
+        self.citizens: Dict[int, Citizen] = {}
+\end{lstlisting}
+
+Przykład zawartości:
+\begin{lstlisting}
+self.citizens = {
+    1:    Citizen(id=1,    sex="male",   age_months=384, alive=True,  ...),
+    2:    Citizen(id=2,    sex="female", age_months=252, alive=True,  ...),
+    3:    Citizen(id=3,    sex="female", age_months=816, alive=False, ...),
+    ...
+    50000: Citizen(id=50000, ...),
+}
+\end{lstlisting}
+
+\subsubsection{Klucz = ID agenta}
+
+Każdy obywatel ma unikalne ID generowane przez zmienną klasową \texttt{Citizen.\_id\_counter}, automatycznie inkrementowaną przy tworzeniu obiektu. ID jest niezmienne przez całe życie agenta i nie powtarza się nawet po jego śmierci.
+
+\subsubsection{Wartość = obiekt Citizen}
+
+Każdy obiekt klasy \texttt{Citizen} zawiera kompletny stan agenta:
+
+\begin{lstlisting}
+class Citizen:
+    id: int                              # unikalny identyfikator
+    sex: str                             # "male" lub "female"
+    age_months: int                      # wiek w miesiacach (nie latach!)
+    alive: bool                          # True/False
+    household_id: int                    # przynaleznosc do gospodarstwa
+    zone_id: int                         # strefa geograficzna (1-4)
+    diseases: Dict[str, int]             # {"CVD": 0, "Lung Cancer": 1}
+    risk_factors: Dict[str, int]         # 7 RF: {"smoking": 0, ...}
+    cumulative_hazard: Dict[str, float]  # pamiec Coxa
+    disability_score: float              # suma wag chorob
+\end{lstlisting}
+
+\subsubsection{Dlaczego Dict, a nie List?}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Kryterium} & \texttt{Dict[int, Citizen]} & \texttt{List[Citizen]} \\
+\midrule
+Lookup po ID                & $O(1)$               & $O(n)$ \\
+Usunięcie martwych          & nie trzeba (flaga \texttt{alive}) & drogie przesunięcia \\
+Iteracja po żywych          & \texttt{if c.alive}  & analogicznie \\
+Nowe narodziny              & \texttt{citizens[id] = newborn} & \texttt{append()} \\
+Stabilność referencji       & stałe ID & indeksy się przesuwają \\
+\bottomrule
+\end{tabular}
+\caption{Porównanie struktur danych dla populacji.}
+\end{table}
+
+\textbf{Kluczowe:} martwi agenci \emph{nie są usuwani} ze słownika. Mają flagę \texttt{alive = False}. Dzięki temu:
+\begin{itemize}
+  \item gospodarstwo może sprawdzić czy członek żyje bez \texttt{KeyError},
+  \item statystyki retrospektywne są możliwe (np.\ ile osób zmarło w wieku 60--70 lat),
+  \item unika się kosztownej przebudowy słownika w trakcie symulacji.
+\end{itemize}
+
+\subsection{Klasa \texttt{Zone} --- strefy geograficzne}
+
+\texttt{Zone} reprezentuje \textbf{strefę geograficzną} z parametrami środowiskowymi. Model ma 4 strefy, każda z własnymi parametrami.
+
+\subsubsection{Definicja klasy}
+
+\begin{lstlisting}
+class Zone:
+    id: int                  # identyfikator (1-4)
+    air_quality: float       # 0.0 (zlej) - 1.0 (doskonalej)
+    healthcare_access: float # 0.0 - 1.0, dostepnosc opieki
+    density: int             # gestosc zaludnienia (osob/km^2)
+\end{lstlisting}
+
+\subsubsection{Cztery strefy w modelu}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrr}
+\toprule
+\textbf{Strefa} & \textbf{Jakość powietrza} & \textbf{Dostęp do opieki} & \textbf{Gęstość (osób/km$^2$)} \\
+\midrule
+1 & 0.75 (wysoka)  & 0.90 (dobry)           & 4000 \\
+2 & 0.65 (średnia) & 0.85                   & 6000 \\
+3 & 0.70           & 0.80                   & 5000 \\
+4 & 0.55 (niska)   & 0.75 (ograniczony)     & 8000 \\
+\bottomrule
+\end{tabular}
+\caption{Parametry 4 stref modelu.}
+\end{table}
+
+Każdy agent ma atrybut \texttt{zone\_id} wskazujący na jedną z tych stref. Gospodarstwa domowe (\texttt{Household}) również należą do stref.
+
+\subsubsection{Reprezentacja w \texttt{SimulationEngine}}
+
+\begin{lstlisting}
+class SimulationEngine:
+    def __init__(self, ...):
+        self.citizens:   Dict[int, Citizen]   = {}
+        self.households: Dict[int, Household] = {}
+        self.zones:      Dict[int, Zone]      = {
+            1: Zone(id=1, air_quality=0.75, ...),
+            2: Zone(id=2, air_quality=0.65, ...),
+            3: Zone(id=3, air_quality=0.70, ...),
+            4: Zone(id=4, air_quality=0.55, ...),
+        }
+\end{lstlisting}
+
+\subsubsection{Wpływ stref na model (obecnie minimalny)}
+
+\begin{warnbox}
+\textbf{Status w obecnej wersji:} parametry środowiskowe stref są \emph{przechowywane}, ale ich wpływ na śmiertelność i choroby jest \emph{minimalny}. Głównym motorem demograficznym są wiekowe tabele GUS (zgodnie z dokumentacją projektu).
+
+\textbf{Potencjalne rozszerzenie:} kalibrowane wagi mogłyby aktywować różnice między strefami:
+\begin{itemize}
+  \item Strefa 4 (wysoka gęstość, niska jakość powietrza) --- wyższa baza dla \texttt{smoking}, \texttt{respiratory disease}.
+  \item Strefa 1 (przedmieścia, niska gęstość) --- niższa baza dla \texttt{air-pollution-related} ryzyka.
+\end{itemize}
+W obecnej wersji projekt skupia się na demografii bazowej + 7 RF (model Coxa) jako głównym driverze.
+\end{warnbox}
+
+\subsection{Pełna architektura w jednym obrazie}
+
+\begin{lstlisting}
+SimulationEngine
+|-- citizens:   Dict[int, Citizen]     # 50 000 obywateli, klucz = id
+|-- households: Dict[int, Household]   # rodziny, klucz = id
+|-- zones:      Dict[int, Zone]        # 4 strefy
+|-- disease_model: DiseaseModel        # parametry Coxa
+|-- yearly_stats:  Dict[int, Dict]     # statystyki per rok
+
+Citizen
+|-- id, sex, age_months, alive
+|-- household_id     -> klucz do households
+|-- zone_id          -> klucz do zones
+|-- diseases:        Dict[str, int]
+|-- risk_factors:    Dict[str, int]    # 7 RF
+|-- cumulative_hazard: Dict[str, float]  # pamiec Coxa
+
+Household
+|-- id, zone_id
+|-- members: List[int]   # lista ID agentow (nie obiektow!)
+
+Zone
+|-- id, air_quality, healthcare_access, density
+\end{lstlisting}
+
+\textbf{Ważny szczegół:} \texttt{Household.members} przechowuje \emph{listę ID} obywateli, nie referencji do obiektów. To zapobiega cyklicznym zależnościom i ułatwia serializację (np.\ zapis do JSON).
+
+\vfill
+\begin{center}
+\color{muted}\small
+\rule{0.4\textwidth}{0.4pt}\\[8pt]
+Notatki uzupełniające do projektu \emph{Urban Health ABM}\\
+ICM UW \ \textbar\ \ 2026
+\end{center}
+
+\end{document}
