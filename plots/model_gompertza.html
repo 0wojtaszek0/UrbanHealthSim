@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Model Gompertza — UrbanHealthSim</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+Pro:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+:root {
+  --ink: #1B2A41;
+  --ink-soft: #34495E;
+  --paper: #FDFDFB;
+  --cream: #F6F1E8;
+  --rule: #D8DEE5;
+  --gold: #A07840;
+  --gold-soft: #C9A87B;
+  --teal: #2C5F7C;
+  --muted: #6B7785;
+  --code-bg: #F4F2EC;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background-color: var(--paper);
+  background-image: radial-gradient(circle at 1px 1px, rgba(27,42,65,0.045) 1px, transparent 0);
+  background-size: 24px 24px;
+  margin: 0; padding: 0;
+  font-family: 'Inter', sans-serif;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 60px 50px 80px 50px;
+  position: relative;
+}
+.page::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 80px;
+  bottom: 80px;
+  width: 2px;
+  background: linear-gradient(180deg, transparent 0%, var(--gold) 15%, var(--gold) 85%, transparent 100%);
+  opacity: 0.45;
+}
+
+.eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+h1 {
+  font-family: 'Source Serif Pro', Georgia, serif;
+  font-weight: 600;
+  font-size: 42px;
+  color: var(--teal);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.subtitle {
+  font-family: 'Source Serif Pro', serif;
+  font-style: italic;
+  font-size: 19px;
+  color: var(--ink-soft);
+  margin-bottom: 26px;
+  max-width: 720px;
+}
+.gold-rule {
+  width: 80px; height: 2px;
+  background: var(--gold);
+  margin: 0 0 36px 0;
+}
+
+h2 {
+  font-family: 'Source Serif Pro', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 12px;
+  margin: 50px 0 24px 0;
+  position: relative;
+}
+h2::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 60px; height: 3px;
+  background: var(--gold);
+}
+h3 {
+  font-family: 'Source Serif Pro', serif;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--teal);
+  margin: 28px 0 10px 0;
+}
+
+p { margin: 0.7em 0; }
+strong { color: var(--ink); font-weight: 600; }
+em { color: var(--ink-soft); }
+
+code, .code-inline {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--code-bg);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.88em;
+  color: var(--ink);
+}
+
+ul {
+  margin: 0.6em 0 0.6em 0;
+  padding-left: 22px;
+}
+ul li {
+  margin-bottom: 7px;
+  line-height: 1.55;
+}
+ul li::marker { color: var(--gold); }
+
+.formula-box {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--teal);
+  border-radius: 4px;
+  padding: 18px 22px;
+  margin: 16px 0;
+  font-size: 0.95em;
+  overflow-x: auto;
+}
+
+.callout {
+  background: var(--cream);
+  border-left: 3px solid var(--gold);
+  padding: 16px 22px;
+  margin: 18px 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.95em;
+}
+.callout strong:first-child { color: var(--gold); }
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin: 22px 0;
+}
+.compare-box {
+  background: var(--cream);
+  border-radius: 4px;
+  padding: 22px 24px;
+}
+.compare-box.blue { background: #DCE6F1; }
+.compare-box.cream { background: #F2EAD8; }
+.compare-box h3 {
+  text-align: center;
+  font-size: 17px;
+  color: var(--teal);
+  margin: 0 0 12px 0;
+}
+.compare-box .formula-mini {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: center;
+  background: var(--paper);
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 0.92em;
+  margin: 8px 0;
+}
+
+.param-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0;
+}
+.param-card {
+  background: var(--cream);
+  border-top: 3px solid var(--gold);
+  border-radius: 4px;
+  padding: 16px 18px;
+}
+.param-card .name {
+  font-family: 'Source Serif Pro', serif;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.param-card .val {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--teal);
+  font-weight: 600;
+  font-size: 0.92em;
+}
+.param-card .desc {
+  font-size: 0.88em;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+
+footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+}
+
+@media (max-width: 720px) {
+  .compare, .param-grid { grid-template-columns: 1fr; }
+  .page { padding: 40px 24px; }
+  h1 { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="eyebrow">UrbanHealthSim · Agent-Based Model</div>
+  <h1>Model Gompertza</h1>
+  <p class="subtitle">Wykładniczy wzrost ryzyka choroby z wiekiem oraz wyjaśnienie nieliniowości reguły stabilności populacji.</p>
+  <div class="gold-rule"></div>
+
+  <!-- ============ MODEL GOMPERTZA ============ -->
+  <h2>Model Gompertza w projekcie</h2>
+
+  <p>W <code>disease_model.py</code> Gompertz opisuje <strong>wykładniczy wzrost ryzyka choroby z wiekiem</strong>. Jest to środkowy człon w formule miesięcznego przyrostu hazardu choroby <em>d</em>:</p>
+
+  <div class="formula-box">
+    $$\Delta h_d(a, X) = \lambda_{0,d} \cdot \underbrace{\exp(\gamma_{\text{age},d} \cdot (a - 30))}_{\text{człon Gompertza}} \cdot \exp\!\left(\sum_{i=1}^{7} \beta_{d,i} \cdot X_i\right)$$
+  </div>
+
+  <ul>
+    <li><strong>$\lambda_{0,d}$</strong> — bazowy hazard miesięczny w wieku 30 lat (punkt odniesienia)</li>
+    <li><strong>$\gamma_{\text{age},d}$</strong> — tempo wzrostu z wiekiem (parametr Gompertza)</li>
+    <li><strong>$a$</strong> — wiek agenta w latach</li>
+  </ul>
+
+  <h3>Parametry w projekcie (<code>AGE_HAZARD_GROWTH</code>)</h3>
+  <div class="param-grid">
+    <div class="param-card">
+      <div class="name">Choroby układu krążenia</div>
+      <div class="val">γ = 0.06</div>
+      <div class="desc">hazard podwaja się co ~12 lat ($\ln 2 / 0.06$)</div>
+    </div>
+    <div class="param-card">
+      <div class="name">Rak płuc</div>
+      <div class="val">γ = 0.075</div>
+      <div class="desc">hazard podwaja się co ~9 lat — rośnie szybciej</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Uwaga:</strong> efektywny wiek to <code>max(a, 18)</code> — Gompertz nie rośnie u dzieci (płaski „ogon" przed dorosłością).
+  </div>
+
+  <p>Sumowanie miesięcznych przyrostów daje <strong>skumulowany hazard</strong>:</p>
+  <div class="formula-box">
+    $$H_{\text{cum},d}(T) = \sum_{t=0}^{T} \Delta h_d(t)$$
+  </div>
+  <p>który reprezentuje <strong>biologiczne uszkodzenie nagromadzone</strong> przez życie agenta i monotonicznie rośnie.</p>
+
+
+  <!-- ============ LINIA vs SIGMOIDA ============ -->
+  <h2>Dlaczego tryb przybliżony jest liniowy, a ABM nie?</h2>
+
+  <div class="compare">
+    <div class="compare-box blue">
+      <h3>Tryb przybliżony</h3>
+      <p>Zakłada, że narodziny i zgony są <strong>proporcjonalne do populacji</strong> — populacja to jedna liczba, bez struktury wiekowej.</p>
+      <div class="formula-mini">
+        urodzeń = FM · CBR · N<br>
+        zgonów = MM · CDR · N
+      </div>
+      <p>Stabilność wymaga równowagi urodzeń i zgonów:</p>
+      <div class="formula-mini">
+        FM · CBR = MM · CDR<br>
+        ⇒ <strong>FM<sub>stab</sub> = 1.88 · MM</strong>
+      </div>
+      <p style="font-size:0.9em; color:var(--ink-soft);"><em>Brak struktury wiekowej → brak nieliniowości.</em></p>
+    </div>
+
+    <div class="compare-box cream">
+      <h3>Model agentowy (ABM)</h3>
+      <p>Uwzględnia, że płodność i śmiertelność są <strong>specyficzne dla wieku</strong>:</p>
+      <ul style="font-size:0.95em;">
+        <li>śmiertelność rośnie z wiekiem (Gompertz)</li>
+        <li>płodność tylko u kobiet 18–40 z gaussowskim szczytem ~27 r.ż.</li>
+      </ul>
+      <p>Gdy MM rośnie, młodzi ludzie też częściej umierają — coraz mniej kobiet dożywa wieku reprodukcyjnego.</p>
+      <div class="formula-mini" style="background:var(--paper); color:var(--teal); font-weight:600;">
+        $\displaystyle \lim_{\text{MM} \to \infty} \text{FM}_{\text{stab}} \approx 2.05$
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Mechanizm saturacji:</strong> aby utrzymać populację, każda kobieta musiałaby rodzić coraz więcej dzieci, ale <strong>biologiczna płodność jest ograniczona z góry</strong>. Stąd krzywa FM<sub>stab</sub>(MM) <strong>saturuje przy asymptocie ≈ 2.05</strong> — żadna realna płodność nie kompensuje dowolnie wysokiej śmiertelności.
+  </div>
+
+  <footer>
+    <span>UrbanHealthSim · Model Gompertza</span>
+    <span>disease_model.py</span>
+  </footer>
+
+</div>
+</body>
+</html>

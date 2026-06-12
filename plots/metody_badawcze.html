@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Metody badawcze — Urban Health ABM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+Pro:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1B2A41;
+  --ink-soft: #34495E;
+  --gold: #A07840;
+  --gold-soft: #C9A87B;
+  --teal: #2C5F7C;
+  --paper: #FDFDFB;
+  --cream: #F6F1E8;
+  --rule: #D8DEE5;
+  --muted: #6B7785;
+}
+
+* { box-sizing: border-box; }
+
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #ECEEF1;
+  font-family: 'Inter', sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Strona A4 landscape: 297mm × 210mm */
+.sheet {
+  width: 297mm;
+  height: 210mm;
+  padding: 14mm 16mm;
+  background: var(--paper);
+  background-image: radial-gradient(circle at 1px 1px, rgba(27,42,65,0.04) 1px, transparent 0);
+  background-size: 22px 22px;
+  margin: 18px auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  page-break-after: always;
+}
+
+@media print {
+  html, body { background: white; }
+  .sheet {
+    margin: 0;
+    box-shadow: none;
+    width: 100%;
+    height: 100%;
+    padding: 8mm 12mm;
+  }
+}
+
+/* HEADER */
+header {
+  text-align: center;
+  margin-bottom: 8mm;
+  padding-bottom: 5mm;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+}
+header::after {
+  content: "";
+  position: absolute;
+  bottom: -1.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2.5px;
+  background: var(--gold);
+}
+.eyebrow {
+  font-size: 9pt;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  margin-bottom: 4mm;
+}
+h1 {
+  font-family: 'Source Serif Pro', Georgia, serif;
+  font-weight: 600;
+  font-size: 22pt;
+  margin: 0 0 1mm;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+.subtitle {
+  font-size: 10pt;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 1mm;
+}
+
+/* ROOT NODE + connecting lines */
+.root-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 0 0 8mm;
+  height: 14mm;
+}
+.root {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 3mm 8mm;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 11pt;
+  letter-spacing: 0.02em;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(27,42,65,0.18);
+  display: inline-flex;
+  align-items: center;
+  gap: 6mm;
+}
+.root .icon {
+  width: 18px; height: 18px;
+  border: 2px solid var(--gold-soft);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+}
+.root .icon::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+}
+
+/* SVG connectors absolutely positioned over the root area */
+.connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* GRID 5 columns */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4mm;
+  flex: 1;
+  min-height: 0;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--gold);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(27,42,65,0.04);
+}
+
+.col .head {
+  background: var(--gold);
+  color: var(--paper);
+  padding: 3mm 4mm;
+  text-align: center;
+  font-weight: 600;
+  font-size: 10pt;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  position: relative;
+}
+.col .head .num {
+  position: absolute;
+  top: 50%;
+  left: 4mm;
+  transform: translateY(-50%);
+  font-family: 'Source Serif Pro', serif;
+  font-size: 14pt;
+  color: var(--gold-soft);
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.col ul {
+  list-style: none;
+  margin: 0;
+  padding: 3mm 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.col li {
+  padding: 1.8mm 4mm 1.8mm 7mm;
+  font-size: 9.5pt;
+  color: var(--ink);
+  line-height: 1.3;
+  position: relative;
+  font-weight: 500;
+}
+.col li::before {
+  content: "";
+  position: absolute;
+  left: 4mm;
+  top: 3.2mm;
+  width: 5px; height: 5px;
+  background: var(--teal);
+  border-radius: 50%;
+}
+.col li .hint {
+  display: block;
+  font-size: 8pt;
+  color: var(--muted);
+  font-weight: 400;
+  font-style: italic;
+  margin-top: 0.5mm;
+  line-height: 1.2;
+}
+
+/* FOOTER */
+footer {
+  margin-top: 4mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8pt;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  border-top: 1px solid var(--rule);
+  padding-top: 2.5mm;
+}
+footer .legend {
+  display: flex;
+  gap: 5mm;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.swatch {
+  width: 10px; height: 10px; border-radius: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <header>
+    <div class="eyebrow">Urban Health ABM &middot; ICM UW &middot; 2026</div>
+    <h1>Metody badawcze projektu</h1>
+    <div class="subtitle">Mapa metod, technik i narzędzi wykorzystanych w pracy</div>
+  </header>
+
+  <div class="root-wrap">
+    <svg class="connectors" viewBox="0 0 1000 100" preserveAspectRatio="none">
+      <!-- 5 line from center top to bottom-5-points -->
+      <path d="M 500 38 Q 500 60, 100 100" stroke="#A07840" stroke-width="1.2" fill="none" opacity="0.55"/>
+      <path d="M 500 38 Q 500 60, 300 100" stroke="#A07840" stroke-width="1.2" fill="none" opacity="0.55"/>
+      <path d="M 500 38 L 500 100" stroke="#A07840" stroke-width="1.2" fill="none" opacity="0.55"/>
+      <path d="M 500 38 Q 500 60, 700 100" stroke="#A07840" stroke-width="1.2" fill="none" opacity="0.55"/>
+      <path d="M 500 38 Q 500 60, 900 100" stroke="#A07840" stroke-width="1.2" fill="none" opacity="0.55"/>
+    </svg>
+    <div class="root"><span class="icon"></span>Metody badawcze · Urban Health ABM</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- COL 1: MODELOWANIE -->
+    <div class="col">
+      <div class="head"><span class="num">I</span>Modelowanie<br>matematyczne</div>
+      <ul>
+        <li>Agent-Based Model<span class="hint">50 000 agentów &middot; 50 lat</span></li>
+        <li>Cox Proportional Hazards<span class="hint">akumulacja H<sub>cum</sub></span></li>
+        <li>Prawo Gompertza<span class="hint">wykładniczy wzrost z wiekiem</span></li>
+        <li>Aproksymacja Poissona<span class="hint">P(onset) = 1 − e<sup>−Δh</sup></span></li>
+        <li>Monte Carlo<span class="hint">stochastyka per agent</span></li>
+      </ul>
+    </div>
+
+    <!-- COL 2: DANE -->
+    <div class="col">
+      <div class="head"><span class="num">II</span>Źródła<br>danych</div>
+      <ul>
+        <li>GUS Polska 2021<span class="hint">q<sub>x</sub>, ASFR, rozkład wieku</span></li>
+        <li>Program Białystok+<span class="hint">kohortowe dane medyczne</span></li>
+        <li>WHO · ESC · CDC · IARC<span class="hint">Hazard Ratios</span></li>
+        <li>Framingham · ATP III<span class="hint">epidemiologia CVD</span></li>
+      </ul>
+    </div>
+
+    <!-- COL 3: OPTYMALIZACJA -->
+    <div class="col">
+      <div class="head"><span class="num">III</span>Optymalizacja<br>i analiza</div>
+      <ul>
+        <li>Gridsearch 12 × 12<span class="hint">proxy + pełny ABM</span></li>
+        <li>Curve fitting (tanh)<span class="hint">nieliniowe najmn. kwadraty</span></li>
+        <li>Interpolacja iso-score<span class="hint">FM* dla score = 0</span></li>
+        <li>Sanity check HR<span class="hint">palacze vs niepalący</span></li>
+        <li>Kalibracja CBR/CDR/TFR<span class="hint">do danych GUS 2021</span></li>
+      </ul>
+    </div>
+
+    <!-- COL 4: IMPLEMENTACJA -->
+    <div class="col">
+      <div class="head"><span class="num">IV</span>Implementacja<br>i kod</div>
+      <ul>
+        <li>OOP w Python 3.12<span class="hint">Citizen, Household, Engine</span></li>
+        <li>ProcessPoolExecutor<span class="hint">równoległość 10 rdzeni</span></li>
+        <li>Seeded RNG<span class="hint">pełna reproducibility</span></li>
+        <li>Synteza populacji<span class="hint">losowanie z rozkładu GUS</span></li>
+      </ul>
+    </div>
+
+    <!-- COL 5: WIZUALIZACJA -->
+    <div class="col">
+      <div class="head"><span class="num">V</span>Wizualizacja<br>i interfejs</div>
+      <ul>
+        <li>Plotly<span class="hint">interaktywne HTML</span></li>
+        <li>Matplotlib<span class="hint">heatmapy 300 dpi</span></li>
+        <li>Sankey diagram<span class="hint">RF → choroby</span></li>
+        <li>Piramidy wiekowe<span class="hint">struktura demograficzna</span></li>
+        <li>Streamlit<span class="hint">aplikacja interaktywna</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>
+    <div>Projekt zespołowy &middot; 2026 &middot; dr Rakowski / dr Kisielewski (ICM UW)</div>
+    <div class="legend">
+      <span class="chip"><span class="swatch" style="background:#1B2A41"></span>Korzeń</span>
+      <span class="chip"><span class="swatch" style="background:#A07840"></span>Kategoria</span>
+      <span class="chip"><span class="swatch" style="background:#2C5F7C; border-radius:50%"></span>Metoda</span>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
