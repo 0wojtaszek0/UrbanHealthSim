@@ -1,0 +1,4 @@
+Disease,Risk Factor 1,Risk Factor 2,Risk Factor 3
+Disease A,1.0,2.0,3.0
+Disease B,2.0,1.0,3.0
+Disease C,2.0,3.0,1.0
